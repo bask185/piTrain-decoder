@@ -60,7 +60,7 @@ railCrossing:  // does not yet exists. As more than 1 of these objects may exist
 */
 #define 		ID 					Array[0]
 #define 		type 				Array[1]
-#define 		trackAmount			Array[1]
+//#define 		trackAmount			Array[1]
 #define 		switchType 			Array[2]
 #define 		detectorIO			Array[2]
 #define 		hasLedIO			Array[2]
@@ -83,7 +83,7 @@ enum serialInstructions {
 	help = 'h',
 	menu = 't',
 	signalInstruction = 'S',
-	decouplerInstruction = 'D',
+	decouplerInstruction = 2,
 	turnoutInstruction = 3,
 	detectorInstruction = 4,
 	memoryInstruction = 5,

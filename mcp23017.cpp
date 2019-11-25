@@ -60,6 +60,12 @@ void Mcp23017::setPortB(byte value) {
 	Wire.write(value); 
 	Wire.endTransmission();}
 
+void Mcp23017::setPort(byte port, byte value) {
+	Wire.beginTransmission(address);
+	Wire.write(port);
+	Wire.write(value); 
+	Wire.endTransmission();}
+
 byte Mcp23017::getRegister(byte _register) {
 	Wire.beginTransmission(address);
 	Wire.write(_register);

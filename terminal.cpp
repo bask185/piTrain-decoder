@@ -14,7 +14,7 @@ byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 #define terminalCommand(x) static byte x##F()
 terminalCommand(getType) {
 	if(firstEntry) { firstEntry = 0;
-	for(byte j=0;j<8;j++) Array[j] = 255;
+		for(byte j=0;j<8;j++) Array[j] = 255; // initialize array before we fill in
 		Serial.println("Enter type");
 		Serial.println("1 = turnout");
 		Serial.println("2 = memory");
@@ -63,7 +63,7 @@ terminalCommand(hasLed) {
 terminalCommand(getLedIO) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("What is IO of LED"); }
-	if(serialByte && makeNumber(&IO,serialByte,0,63,'\n')) {
+	if(serialByte && makeNumber(&ledIO,serialByte,0,63,'\n')) {
 		return 1; }
 	return 0; }
 
@@ -158,6 +158,9 @@ extern byte menuF() { // called from main
 			|| switchType == RELAY) nextCommand(curvedOrStraight);
 			else nextCommand(adjustCurvedPosition); }
 
+		terminalCommand(getDecouplerIO) {
+			nextCommand(hasLed); }
+
 		terminalCommand(adjustCurvedPosition) {
 			nextCommand(adjustStraightPosition); }
 
@@ -174,7 +177,7 @@ extern byte menuF() { // called from main
 static void store() {
 	byte j;
 	//Serial.print("IO ");Serial.println(IO);
-	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPORM
+	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 	//Serial.print("eeAddress ");Serial.println(eeAddress);
 	for(j = 0; j < 8; j++) { 
 		EEPROM.write(eeAddress++, Array[j]); } }
@@ -182,15 +185,14 @@ static void store() {
 
 extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ // returns ammount of requied MCP23017 slaves depending on taught in IO
 	byte j, i, highestIO = 0, highestTurnoutIO = 0, element;
-	unsigned int eeAddress = 0;
+	unsigned int eeAddress;
 
-	for(element = 0; element < elementAmmount; j++) { // 64x
+	for(element = 0; element < elementAmmount; element++) { // 64x
 		byte nMcp = element / 16;
 		byte pin = element % 16;
 		
 		eeAddress = element * 8;
-		type = EEPROM.read(eeAddress + 1); // fetches rail item type, we need inputs, these are 
-
+		EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
 		if(type != 255 && element > highestIO) highestIO = element; // this line must record the highest IO
 																	// as element is linked to IO, element is used
 
@@ -199,11 +201,7 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 			*iodir |= 0x01 << pin; 							// flag pin as input
 			iodir -= nMcp; 									// set address back
 
-			hasLedIO = EEPROM.read(eeAddress + 2); 			// check if the input element has an LED attached?
-
-			if(hasLedIO) { 						 			// yes
-				ledIO = EEPROM.read(eeAddress + 3); 		// fetch the IO
-				if(ledIO > highestIO) highestIO = ledIO; } } }// keep the highest IO counter up to date
+			if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } // keep the highest IO counter up to date
 			// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
 			// as it is defaulted to 0
 

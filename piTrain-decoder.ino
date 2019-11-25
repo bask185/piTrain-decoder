@@ -42,18 +42,23 @@ void setup() {
 	byte j;
 	Wire.begin();
 	Serial.begin(115200);
-	Serial.println("arduino booted");
+	
+	EEPROM.write(1, 5);
+	// EEPROM.write(377, 255);
+
+	// while(1);
+	Serial.println("program booting");
 	//printEEprom();
 	// fetch data from EEPROM and commit them to the struct types
 	unsigned int ioDir[8] = {0,0,0,0,0,0,0,0};						// create local array for IOdir registers of 8 mcp devices
 	delay(2000);
 	loadEEPROM(&nMcp, &nServoDrivers, ioDir); 	// determen what the highest IO is of all object, to determen the ammount of Mcp23017 devices and fill structs
 	delay(2000);
-	//Serial.print(nMcp);Serial.println(" mcp slaves");
-	//Serial.print(nServoDrivers);Serial.println(" servo drivers");
+	Serial.print(nMcp);Serial.println(" mcp slaves");
+	Serial.print(nServoDrivers);Serial.println(" servo drivers");
 	Serial.println(ioDir[0],HEX);
 	Serial.println(ioDir[1],HEX);
-	// Serial.println(ioDir[2],BIN);
+	Serial.println(ioDir[2],BIN);
 	// Serial.println(ioDir[3],BIN);
 	// Serial.println(ioDir[4],BIN);
 	// Serial.println(ioDir[5],BIN);
@@ -61,29 +66,22 @@ void setup() {
 	// Serial.println(ioDir[7],BIN);
 
 	//ioDirPtr = &ioDir;
-	ioDir[0] = 0x00ff;
-	ioDir[1] = 0x00ff;
+	//ioDir[0] = 0x00ff;
+	//ioDir[1] = 0x00ff;
+	//ioDir[2] = 0xffff;
 
 	for(j=0;j<nMcp;j++) {
-		//Serial.print("slave #");Serial.print(j);Serial.print(" has address #");Serial.print(mcpBaseAddress + j);
-		//Serial.print(" and it's IO state = "); Serial.println(ioDir[j],BIN);
+		Serial.print("slave #");Serial.print(j);Serial.print(" has address #");Serial.print(mcpBaseAddress + j);
+		Serial.print(" and it's IO state = "); Serial.println(ioDir[j],BIN);
 		mcp[j].init(mcpBaseAddress + j, ioDir[j]); }
 
-	//mcp[0].init(mcpBaseAddress, 0xffff);
-
-	// if(nServoDrivers==1){		
-	// 	servoDriver[0].init(); }
-	
-	// if(nServoDrivers==2){
-	// 	servoDriver[1].init(); }
-	command = 0;	
-}
+	Serial.println("starting program, press 'h' for help");
+	command = 0; }
 
 void loop() {
 	delay(20);				    // this is just temporarily
 	
-	
-	// readInputs();
+	readInputs();
 	readSerialBus();
 	//menu();
 }
@@ -93,7 +91,7 @@ void loop() {
 serialCommand(help) {
 	Serial.println("help menu");
 	Serial.println(	"help = 'h'\r\n"
-					"terminal = 't'\r\n"
+					"add item = 't'\r\n"
 					"signalInstruction = 'S'\r\n"
 					"decouplerInstruction = 'D'\r\n"
 					"turnoutInstruction = 'T'\r\n"
@@ -192,7 +190,7 @@ void readSerialBus() {
 void readInputs() {
 	byte slave, pin, element, /*IO,*/ state;
 	for(slave=0; slave<nMcp; slave++){  										// for all MCP23017 devices
-		static unsigned int inputPrev[16], input = 0;
+		static unsigned int inputPrev[8] = {0,0,0,0,0,0,0,0}, input = 0;
 		input = mcp[slave].getInput(portB) | (mcp[slave].getInput(portA) << 8);	// read both I/O ports
 		for(pin=0;pin<16;pin++) {												// for all 16 I/O pins
 			if((input & (1 << pin)) != (inputPrev[slave] & (1 << pin))) {		// if an input (detector or memory) has changed...
@@ -200,29 +198,34 @@ void readInputs() {
 				if(input & (1<<pin))	state = 0;					  			// store the state of the changed I/O (not pressed = HIGH)
 				else					state = 1;
 				IO = pin + slave * 16;											// calculate which IO has changed
-
 				for(element=0; element<elementAmmount; element++){				// for every rail item check if the changed IO matches
 					unsigned int eeAddress = IO * 8 ;
-					ID = EEPROM.read(eeAddress);								// fetch ID from EEPROM
-					type = EEPROM.read(++eeAddress);							// fetch rail item type
-					if(type != 255) sendState(state);  } } } } }						// if type = 255, the device is not defined
+					EEPROM.get(eeAddress, Array);								// fetch ID from EEPROM
+					if(type != 255) {
+						if(!debug) sendState(state);  
+						if(hasLedIO == YES) setLED(state);
+						return; } } } } } }				// if type = 255, the device is not defined
 
 //railCrossing // yet to be made, will prob be a combo of inputs for detection servo's and LEDs
 //will need a state machine
 
-void setLED(byte IO, byte state) {	//  ID prev is to be cleared, ID is to be set
+void setLED(byte state) {	//  ID prev is to be cleared, ID is to be set
 	static byte pinPrev, xMcpPrev;
-	byte element, xMcp, pin, LEDport;
-	unsigned int input;
-	xMcp = IO / 16;
-	pin = IO % 16; // < works
+	byte element, xMcp, pin, LEDport, input;
+	//unsigned int input;
+	xMcp = ledIO / 16;
+	pin = ledIO % 16; // < works
+	if(pin < 8) {
+		LEDport = portB; }
+	else {
+		LEDport = portA;
+		pin -= 8; }
 
-	input = mcp[xMcp].getInput(portA) << 8 | mcp[xMcp].getInput(portB);
-	if(state)	input |=  pin;
-	else		input &= ~pin;
+	input = mcp[xMcp].getInput(LEDport);
+	if(state)	input |=  (1 << pin);
+	else		input &= ~(1 << pin);
 
-	mcp[xMcp].setPortA(input>>8);
-	mcp[xMcp].setPortB(input); }
+	mcp[xMcp].setPort(LEDport, input); }
 
 
 void sendState(byte state) {
@@ -235,7 +238,7 @@ void sendState(byte state) {
 		if(!state) return; 		// memories' low states are irrelevant to everything else, so we return
 		else /*clrMemoryLeds()*/; } // only 1 memory LED is to be set at the time
 
-	if(hasLedIO == YES) setLED(ledIO, state); // if there is an LED to be set/cleared, make it so!
+	//if(hasLedIO == YES) setLED(ledIO, state); // if there is an LED to be set/cleared, make it so!
 	Serial.write(ID);
 	Serial.write(state); }
 

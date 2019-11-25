@@ -22,6 +22,7 @@ class Mcp23017 {
 	void setPullUp(byte, byte);
 	void setPortA(byte);
 	void setPortB(byte);
+	void setPort(byte, byte);
 	byte getRegister(byte);
 	
 	private:
