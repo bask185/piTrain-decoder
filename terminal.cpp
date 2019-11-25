@@ -47,7 +47,7 @@ terminalCommand(getIO) {
 terminalCommand(getDecouplerIO) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("On which output is the decoupler?"); }
-	if(serialByte && makeNumber(&IO,serialByte,0,63,'\n')) {
+	if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
 		return 1; }
 	return 0;}
 

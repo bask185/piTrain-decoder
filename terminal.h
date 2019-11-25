@@ -6,11 +6,6 @@
 
 #define YES 1
 #define NO 0
-// final int	idle = 1;
-// final int	decouplerInstruction = 2;
-// final int	turnoutInstruction = 3;
-// final int	detectorInstruction = 4;
-// final int	memoryInstruction = 5;
 
 
 /* DATA LAYOUT
@@ -90,6 +85,8 @@ enum serialInstructions {
 	printEEpromInstruction = 'E',
 	whipeEEpromInstruction = 'W',
 	toggleDebugInstruction = 'd'};
+
+
 
 enum railItems {
 	turnoutObject = 1,

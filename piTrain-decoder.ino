@@ -42,8 +42,7 @@ void setup() {
 	byte j;
 	Wire.begin();
 	Serial.begin(115200);
-	
-	EEPROM.write(1, 5);
+
 	// EEPROM.write(377, 255);
 
 	// while(1);
