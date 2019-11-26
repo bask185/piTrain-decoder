@@ -3,10 +3,6 @@
 #include <EEPROM.h>
 
 
-
-
-
-
 static byte subCommand = 0;
 byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 
@@ -21,7 +17,8 @@ terminalCommand(getType) {
 		Serial.println("3 = detector");
 		Serial.println("4 = signal");
 		Serial.println("5 = decoupler");
-		Serial.println("6 = railCrossing"); }
+		Serial.println("6 = railCrossing"); 
+		Serial.println("7 = remove item"); }
 	switch(serialByte) {
 		case '1': type = turnoutObject; return 1;
 		case '2': type = memoryObject; return 1;
@@ -29,6 +26,7 @@ terminalCommand(getType) {
 		case '4': type = signalObject; return 1;
 		case '5': type = decouplerObject; return 1;
 		//case '6': type = Object; return 1;
+		case '7': type = removeDevice;  return 1;
 		default: return 0; } }
 
 terminalCommand(getID) {
@@ -99,6 +97,12 @@ terminalCommand(adjustStraightPosition) {
 	if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;
 	return 0; }
 
+terminalCommand(removeDevice) {
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("enter IO of to be removed device"); }
+	if(serialByte && makeNumber(&IO,serialByte,0,255,'\n')) return 1;
+	return 0; }
+
 terminalCommand(storeObject) {
 	static byte response = 0;
 	if(firstEntry) { firstEntry = 0;
@@ -133,7 +137,8 @@ extern byte menuF() { // called from main
 			nextCommand(getType); }
 		
 		terminalCommand(getType) {
-			nextCommand(getID); }
+			if(type == removeDevice)	nextCommand(removeDevice);
+			else						nextCommand(getID); }
 		
 		terminalCommand(getID) 	{
 			nextCommand(getIO); }
@@ -166,6 +171,10 @@ extern byte menuF() { // called from main
 
 		terminalCommand(adjustStraightPosition) {
 			nextCommand(storeObject); }
+
+		terminalCommand(removeDevice) {
+			nextCommand(0);  
+			return 1; }
 		
 		terminalCommand(storeObject) {
 			nextCommand(0);
@@ -193,17 +202,20 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 		
 		eeAddress = element * 8;
 		EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
-		if(type != 255 && element > highestIO) highestIO = element; // this line must record the highest IO
+		if(type != 255) {
+			if(element > highestIO) highestIO = element; 			// this line must record the highest IO
 																	// as element is linked to IO, element is used
+			if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
 
-		if(type == memoryObject || type == detectorObject || type == decouplerObject) {
-			iodir += nMcp; 									// match iodir's address to corresponding mcp23017
-			*iodir |= 0x01 << pin; 							// flag pin as input
-			iodir -= nMcp; 									// set address back
+			if(type == memoryObject || type == detectorObject || type == decouplerObject) {
+				iodir += nMcp; 									// match iodir's address to corresponding mcp23017
+				*iodir |= 0x01 << pin; 							// flag pin as input
+				iodir -= nMcp; 									// set address back
 
-			if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } // keep the highest IO counter up to date
-			// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
-			// as it is defaulted to 0
+				//if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
+				if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } }// keep the highest IO counter up to date
+				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
+				// as it is defaulted to 0
 
 	Serial.print("highest IO "); Serial.println(highestIO);
 	highestIO = highestIO / 16 + 1;

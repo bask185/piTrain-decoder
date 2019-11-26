@@ -16,7 +16,7 @@
 #include <EEPROM.h>
 
 
-byte nMcp, nServoDrivers;
+byte nMcp, nServoDrivers, caseSelector;
 
 //ServoDriver servo;
 Mcp23017 mcp[] {	// 2 max
@@ -43,7 +43,11 @@ void setup() {
 	Wire.begin();
 	Serial.begin(115200);
 
+	// EEPROM.write(376, 255);
 	// EEPROM.write(377, 255);
+	// EEPROM.write(378, 255);
+	// EEPROM.write(379, 255);
+
 
 	// while(1);
 	Serial.println("program booting");
@@ -89,22 +93,22 @@ void loop() {
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
 	Serial.println("help menu");
-	Serial.println(	"help = 'h'\r\n"
-					"add item = 't'\r\n"
-					"signalInstruction = 'S'\r\n"
-					"decouplerInstruction = 'D'\r\n"
-					"turnoutInstruction = 'T'\r\n"
-					"detectorInstruction = 'd'\r\n"
-					"memoryInstruction = 'M'\r\n"
-					"printEEpromInstruction = 'E'\r\n"
-					"whipeEEpromInstruction = 'W'\r\n"
-					"toggleDebug = 'd'");
+	Serial.println(	"h = help\r\n"
+					"t = add item\r\n"
+					"S = signalInstruction\r\n"
+					"D = decouplerInstruction\r\n"
+					"T = turnoutInstruction\r\n"
+					"d = detectorInstruction\r\n"
+					"M = memoryInstruction\r\n"
+					"E = printEEpromInstruction\r\n"
+					"W = whipeEEpromInstruction\r\n"
+					"d = toggleDebug");
 	return 1; }
 
 serialCommand(signalInstruction) {
-	static byte signalID, caseSelector, element;
+	static byte signalID, element;
 	unsigned int eeAddres;
-	switch(caseSelector++) {
+	switch(caseSelector) {
 		case 0: signalID = serialByte; return 0;
 		case 1:		
 		for(element = 0; element < elementAmmount; element++) {
@@ -118,9 +122,9 @@ serialCommand(signalInstruction) {
 		return 1; } }
 
 serialCommand(turnoutInstruction) {
-	static byte switchID, caseSelector, element;
+	static byte switchID, element;
 	unsigned int eeAddres;
-	switch(caseSelector++) {
+	switch(caseSelector) {
 		case 0: switchID = serialByte; return 0;
 		case 1:		
 			for(element = 0; element < elementAmmount; element++) {
@@ -169,7 +173,9 @@ serialCommand(toggleDebugInstruction){
 void readSerialBus() {
 	if(Serial.available()>0){
 		serialByte = Serial.read(); 
+		caseSelector++;
 		if(!command) {
+			caseSelector = 0;
 			Serial.write(12);
 			command = serialByte; }			// if not yet a command was received, fetch new command
 		switch(command) {
@@ -202,29 +208,30 @@ void readInputs() {
 					EEPROM.get(eeAddress, Array);								// fetch ID from EEPROM
 					if(type != 255) {
 						if(!debug) sendState(state);  
-						if(hasLedIO == YES) setLED(state);
+						if(type == decouplerObject)	setOutput(outputIO, state);
+						if(hasLedIO == YES) 		setOutput(ledIO, state);
 						return; } } } } } }				// if type = 255, the device is not defined
 
 //railCrossing // yet to be made, will prob be a combo of inputs for detection servo's and LEDs
 //will need a state machine
 
-void setLED(byte state) {	//  ID prev is to be cleared, ID is to be set
+void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to be set
 	static byte pinPrev, xMcpPrev;
-	byte element, xMcp, pin, LEDport, input;
+	byte element, xMcp, pin, port, input;
 	//unsigned int input;
-	xMcp = ledIO / 16;
-	pin = ledIO % 16; // < works
+	xMcp = output / 16;
+	pin = output % 16; // < works
 	if(pin < 8) {
-		LEDport = portB; }
+		port = portB; }
 	else {
-		LEDport = portA;
+		port = portA;
 		pin -= 8; }
 
-	input = mcp[xMcp].getInput(LEDport);
+	input = mcp[xMcp].getInput(port);
 	if(state)	input |=  (1 << pin);
 	else		input &= ~(1 << pin);
 
-	mcp[xMcp].setPort(LEDport, input); }
+	mcp[xMcp].setPort(port, input); }
 
 
 void sendState(byte state) {

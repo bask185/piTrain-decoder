@@ -84,7 +84,7 @@ enum serialInstructions {
 	memoryInstruction = 5,
 	printEEpromInstruction = 'E',
 	whipeEEpromInstruction = 'W',
-	toggleDebugInstruction = 'd'};
+	toggleDebugInstruction = 'd' };
 
 
 
@@ -107,7 +107,8 @@ enum commands {
 	curvedOrStraight,
 	adjustCurvedPosition,
 	adjustStraightPosition,
-	storeObject };
+	storeObject,
+	removeDevice };
 
 enum turnoutTypes {
 	SERVO = 1,
