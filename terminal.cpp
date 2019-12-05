@@ -160,7 +160,8 @@ extern byte menuF() { // called from main
 
 		terminalCommand(getSwitchType) {
 			if(switchType == COILS 
-			|| switchType == RELAY) nextCommand(curvedOrStraight);
+			|| switchType == RELAY) 
+				 nextCommand(curvedOrStraight); 
 			else nextCommand(adjustCurvedPosition); }
 
 		terminalCommand(getDecouplerIO) {
@@ -187,6 +188,9 @@ static void store() {
 	byte j;
 	//Serial.print("IO ");Serial.println(IO);
 	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
+
+	if(type == turnoutObject && switchType == SERVO) {
+		eeAddress += (elementAmmount * 8); } // servo motors can have same IO as not servo devices
 	//Serial.print("eeAddress ");Serial.println(eeAddress);
 	for(j = 0; j < 8; j++) { 
 		EEPROM.write(eeAddress++, Array[j]); } }
@@ -196,7 +200,7 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 	byte j, i, highestIO = 0, highestTurnoutIO = 0, element;
 	unsigned int eeAddress;
 
-	for(element = 0; element < elementAmmount; element++) { // 64x
+	for(element = 0; element < elementAmmount * 2; element++) { // 64x
 		byte nMcp = element / 16;
 		byte pin = element % 16;
 		

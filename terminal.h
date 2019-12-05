@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#define memoryAddress 0x100
-#define detectorAddress 0x180
+//#define memoryAddress 0x100
+//#define detectorAddress 0x180
 
 #define elementAmmount 64
 

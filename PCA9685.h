@@ -1,15 +1,15 @@
-// #ifndef PCA9685_H
-// #define PCA9685_H
+#ifndef PCA9685_H
+#define PCA9685_H
 
-// #include <Arduino.h>
+#include <Arduino.h>
 
-// class PCA9685 {
-// 	public:
-//         PCA9685();
-//         void init(byte);
-//         void setServo(byte, byte);
+class PCA9685 {
+	public:
+        PCA9685();
+        void init(byte);
+        void setServo(byte, byte);
 	
-// 	private:
-// 	    byte address; };
+	private:
+	    byte address; };
 
-// #endif
+#endif

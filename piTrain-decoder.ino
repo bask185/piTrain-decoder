@@ -10,7 +10,7 @@
 
 //#include <I2Cdev.h>
 #include "mcp23017.h"
-//#include <PCA9685.h>
+#include "PCA9685.h"
 #include <Wire.h> 
 #include "terminal.h"
 #include <EEPROM.h>
@@ -23,11 +23,7 @@ Mcp23017 mcp[] {	// 2 max
 	Mcp23017(),
 	Mcp23017(),
 	Mcp23017(),
-	Mcp23017(),
-	Mcp23017(),
-	Mcp23017(),
-	Mcp23017(),
-	Mcp23017() } ;
+	Mcp23017() };
 
 // PCA9685 pca[] {	// 2 max
 // 	PCA9685(),
@@ -50,18 +46,18 @@ void setup() {
 
 
 	// while(1);
-	Serial.println("program booting");
+	//Serial.println("program booting");
 	//printEEprom();
 	// fetch data from EEPROM and commit them to the struct types
-	unsigned int ioDir[8] = {0,0,0,0,0,0,0,0};						// create local array for IOdir registers of 8 mcp devices
+	unsigned int ioDir[4] = {0,0,0,0};						// create local array for IOdir registers of 8 mcp devices
 	delay(2000);
 	loadEEPROM(&nMcp, &nServoDrivers, ioDir); 	// determen what the highest IO is of all object, to determen the ammount of Mcp23017 devices and fill structs
 	delay(2000);
-	Serial.print(nMcp);Serial.println(" mcp slaves");
-	Serial.print(nServoDrivers);Serial.println(" servo drivers");
-	Serial.println(ioDir[0],HEX);
-	Serial.println(ioDir[1],HEX);
-	Serial.println(ioDir[2],BIN);
+	//Serial.print(nMcp);Serial.println(" mcp slaves");
+	//Serial.print(nServoDrivers);Serial.println(" servo drivers");
+	// Serial.println(ioDir[0],HEX);
+	// Serial.println(ioDir[1],HEX);
+	// Serial.println(ioDir[2],BIN);
 	// Serial.println(ioDir[3],BIN);
 	// Serial.println(ioDir[4],BIN);
 	// Serial.println(ioDir[5],BIN);
@@ -73,12 +69,12 @@ void setup() {
 	//ioDir[1] = 0x00ff;
 	//ioDir[2] = 0xffff;
 
-	for(j=0;j<nMcp;j++) {
-		Serial.print("slave #");Serial.print(j);Serial.print(" has address #");Serial.print(mcpBaseAddress + j);
-		Serial.print(" and it's IO state = "); Serial.println(ioDir[j],BIN);
-		mcp[j].init(mcpBaseAddress + j, ioDir[j]); }
+	// for(j=0;j<nMcp;j++) {
+	// 	Serial.print("slave #");Serial.print(j);Serial.print(" has address #");Serial.print(mcpBaseAddress + j);
+	// 	Serial.print(" and it's IO state = "); Serial.println(ioDir[j],BIN);
+	// 	mcp[j].init(mcpBaseAddress + j, ioDir[j]); }
 
-	Serial.println("starting program, press 'h' for help");
+	//Serial.println("starting program, press 'h' for help");
 	command = 0; }
 
 void loop() {
@@ -111,14 +107,12 @@ serialCommand(signalInstruction) {
 	switch(caseSelector) {
 		case 0: signalID = serialByte; return 0;
 		case 1:		
-		for(element = 0; element < elementAmmount; element++) {
+		for(element = 0; element < elementAmmount*2; element++) {
 			unsigned int eeAddress = element * 8;
-			//byte IO = element;
-			//byte ID = EEPROM.read(eeAddress);
-			//byte type = EEPROM.read(eeAddres + 1);
-			//byte state = serialByte;
-			if(type == signalObject/* && ID == switchID*/) { // if matching ID is found
-				/*setSwitch(IO, state);*/ } } 
+
+			if(type == signalObject && ID == signalID) { // if a switchType is found and it's ID matches
+				switch(switchType) {
+					case SERVO :/*setSwitch(IO, state);*/ break;
 		return 1; } }
 
 serialCommand(turnoutInstruction) {
@@ -127,7 +121,7 @@ serialCommand(turnoutInstruction) {
 	switch(caseSelector) {
 		case 0: switchID = serialByte; return 0;
 		case 1:		
-			for(element = 0; element < elementAmmount; element++) {
+			for(element = 0; element < elementAmmount*2; element++) {
 				unsigned int eeAddress = element * 8;
 				byte IO = element;
 				//byte ID = EEPROM.read(eeAddress);
