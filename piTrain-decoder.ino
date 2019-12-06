@@ -19,15 +19,17 @@
 byte nMcp, nServoDrivers, caseSelector;
 
 //ServoDriver servo;
-Mcp23017 mcp[] {	// 2 max
+Mcp23017 mcp[] {	// 4 max
 	Mcp23017(),
 	Mcp23017(),
 	Mcp23017(),
-	Mcp23017() };
+	Mcp23017() };	// 64 GPIO
 
-// PCA9685 pca[] {	// 2 max
-// 	PCA9685(),
-// 	PCA9685() } ;
+PCA9685 pca[] {	// 3 max
+	PCA9685(),
+	PCA9685(),	// 64 servo's
+	PCA9685(),
+	PCA9685() };
 
 char command = 0, mcpAmmount;
 
@@ -105,30 +107,47 @@ serialCommand(signalInstruction) {
 	static byte signalID, element;
 	unsigned int eeAddres;
 	switch(caseSelector) {
-		case 0: signalID = serialByte; return 0;
-		case 1:		
+	case 0: 
+		signalID = serialByte; 
+		return 0;
+	case 1:		
+		byte state;
 		for(element = 0; element < elementAmmount*2; element++) {
-			unsigned int eeAddress = element * 8;
-
-			if(type == signalObject && ID == signalID) { // if a switchType is found and it's ID matches
-				switch(switchType) {
-					case SERVO :/*setSwitch(IO, state);*/ break;
+			unsigned int eeAddress = element * 8; }
 		return 1; } }
 
 serialCommand(turnoutInstruction) {
-	static byte switchID, element;
-	unsigned int eeAddres;
+	static byte switchID;
+	unsigned int eeAddress;
+	byte element, xPca = IO / 16;
 	switch(caseSelector) {
-		case 0: switchID = serialByte; return 0;
-		case 1:		
-			for(element = 0; element < elementAmmount*2; element++) {
-				unsigned int eeAddress = element * 8;
-				byte IO = element;
-				//byte ID = EEPROM.read(eeAddress);
-				//byte type = EEPROM.read(eeAddres + 1);
-				byte state = serialByte;
-				if(type == turnoutObject/* && ID == switchID*/) { // if matching ID is found
-					/*setSwitch(IO, state);*/ } } } }
+	case 0: 
+		switchID = serialByte; 
+		return 0;
+	case 1:		
+		byte state;
+		for(element = 0; element < elementAmmount*2; element++) {
+			eeAddress = element * 8;
+
+			if(type == turnoutObject && ID == switchID) { // if a switchType is found and it's ID matches
+				switch(switchType) {
+				case SERVO :
+					state = serialByte;
+					if(state)	setServo(ID, curvedPos);
+					else		setServo(ID, straightPos);
+					break;
+				case RELAY:
+					if(invertedDirection)	state = serialByte ^ 1;
+					else					state = serialByte;
+					setOutput(IO, state);
+					break;
+				case COILS:
+					if(invertedDirection)	state = serialByte ^ 1;
+					else					state = serialByte;
+					setOutput(IO, state);
+					setOutput(IO + 1, state ^ 1);
+					break; } } }
+		return 1; } }
 
 
 serialCommand(printEEpromInstruction){
@@ -209,6 +228,11 @@ void readInputs() {
 //railCrossing // yet to be made, will prob be a combo of inputs for detection servo's and LEDs
 //will need a state machine
 
+void setServo(byte _IO, byte pos) {
+	byte xPca = _IO / 16;
+	_IO = _IO % 16; 
+	pca[xPca].setServo(_IO, pos); }
+
 void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to be set
 	static byte pinPrev, xMcpPrev;
 	byte element, xMcp, pin, port, input;
@@ -224,7 +248,6 @@ void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to
 	input = mcp[xMcp].getInput(port);
 	if(state)	input |=  (1 << pin);
 	else		input &= ~(1 << pin);
-
 	mcp[xMcp].setPort(port, input); }
 
 

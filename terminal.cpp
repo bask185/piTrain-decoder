@@ -78,10 +78,10 @@ terminalCommand(getSwitchType) {
 terminalCommand(curvedOrStraight) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("Turnout is now set at straight");
-		Serial.println("Is it curved?"); }
+		Serial.println("Must direction be inverted?"); }
 	switch(serialByte) {
-		case 'Y': case 'y': hasLedIO = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': hasLedIO = NO;  Serial.print("  NO \r");break;
+		case 'Y': case 'y': invertedDirection = YES; Serial.print("  YES\r"); break;
+		case 'N': case 'n': invertedDirection = NO;  Serial.print("  NO \r"); break;
 		case '\r': return 1;
 		default : return 0; } }
 
@@ -160,8 +160,8 @@ extern byte menuF() { // called from main
 
 		terminalCommand(getSwitchType) {
 			if(switchType == COILS 
-			|| switchType == RELAY) 
-				 nextCommand(curvedOrStraight); 
+			|| switchType == RELAY) {
+				 nextCommand(curvedOrStraight); }
 			else nextCommand(adjustCurvedPosition); }
 
 		terminalCommand(getDecouplerIO) {
@@ -207,11 +207,10 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 		eeAddress = element * 8;
 		EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
 		if(type != 255) {
-			if(element > highestIO) highestIO = element; 			// this line must record the highest IO
-																	// as element is linked to IO, element is used
+			if(element > highestIO) highestIO = element; 			// these lines will find the highest IO for us
 			if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
 
-			if(type == memoryObject || type == detectorObject || type == decouplerObject) {
+			if(type == memoryObject || type == detectorObject || type == decouplerObject) { // this will find all inputs
 				iodir += nMcp; 									// match iodir's address to corresponding mcp23017
 				*iodir |= 0x01 << pin; 							// flag pin as input
 				iodir -= nMcp; 									// set address back
@@ -221,9 +220,5 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
 				// as it is defaulted to 0
 
-	Serial.print("highest IO "); Serial.println(highestIO);
-	highestIO = highestIO / 16 + 1;
-	Serial.print("highest IO after calculation  ");Serial.println(highestIO);						
-	highestTurnoutIO = highestTurnoutIO / 16 + 1; 	// highest existing IO is 31 which means 2 pca drivers 
-	*nMcp = highestIO; }
-	//*nservoDrivers= highestTurnoutIO; }
+	*nMcp = highestIO / 16 + 1;
+	*nservoDrivers = highestTurnoutIO / 16 + 1; }
