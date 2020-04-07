@@ -6,219 +6,245 @@
 static byte subCommand = 0;
 byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 
+static void updateServo(byte ID, byte position) {
+    unsigned int onTime, offTime, ms, pulseDuration, pulseStart;
+    unsigned char servoAddress;
+
+    servoAddress = SERVO_BASE_ADDRESS + (4 * ID);
+    ms = map(position, 0, 180, 1000, 2000);  // map degrees to milliseconds
+
+    pulseStart = 0;
+    //pulseDuration = map();
+
+    Wire.beginTransmission(address);
+    Wire.write(servoAddress);
+    Wire.write(pulseStart);
+    Wire.write(pulseStart >> 8);
+    Wire.write(pulseDuration);
+    Wire.write(pulseDuration >> 8);
+    Wire.endTransmission(); }
 
 #define terminalCommand(x) static byte x##F()
 terminalCommand(getType) {
-	if(firstEntry) { firstEntry = 0;
-		for(byte j=0;j<8;j++) Array[j] = 255; // initialize array before we fill in
-		Serial.println("Enter type");
-		Serial.println("1 = turnout");
-		Serial.println("2 = memory");
-		Serial.println("3 = detector");
-		Serial.println("4 = signal");
-		Serial.println("5 = decoupler");
-		Serial.println("6 = railCrossing"); 
-		Serial.println("7 = remove item"); }
-	switch(serialByte) {
-		case '1': type = turnoutObject; return 1;
-		case '2': type = memoryObject; return 1;
-		case '3': type = detectorObject; return 1;
-		case '4': type = signalObject; return 1;
-		case '5': type = decouplerObject; return 1;
-		//case '6': type = Object; return 1;
-		case '7': type = removeDevice;  return 1;
-		default: return 0; } }
+    if(firstEntry) { firstEntry = 0;
+        for(byte j=0;j<8;j++) Array[j] = 255; // initialize array before we fill in
+        Serial.println("Enter type");
+        Serial.println("1 = turnout");
+        Serial.println("2 = memory");
+        Serial.println("3 = detector");
+        Serial.println("4 = signal");
+        Serial.println("5 = decoupler");
+        Serial.println("6 = railCrossing"); 
+        Serial.println("7 = remove item"); }
+    switch(serialByte) {
+        case '1': type = turnoutObject; return 1;
+        case '2': type = memoryObject; return 1;
+        case '3': type = detectorObject; return 1;
+        case '4': type = signalObject; return 1;
+        case '5': type = decouplerObject; return 1;
+        //case '6': type = Object; return 1;
+        case '7': type = removeDevice;  return 1;
+        default: return 0; } }
 
 terminalCommand(getID) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("select ID 1-254, press ENTER when ready");}
-	if(serialByte && makeNumber(&ID,serialByte,1,255,'\n')) return 1; 
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("select ID 1-254, press ENTER when ready");}
+    if(serialByte && makeNumber(&ID,serialByte,1,255,'\n')) return 1; 
+    return 0; }
 
 terminalCommand(getIO) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("select IO 0-63, press ENTER when ready"); }
-	if(serialByte && makeNumber(&IO,serialByte,0,63,'\n')) {
-		return 1; }
-	return 0;}
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("select IO 0-63, press ENTER when ready"); }
+    if(serialByte && makeNumber(&IO,serialByte,0,63,'\n')) {
+        return 1; }
+    return 0;}
 
 terminalCommand(getDecouplerIO) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("On which output is the decoupler?"); }
-	if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
-		return 1; }
-	return 0;}
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("On which output is the decoupler?"); }
+    if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
+        return 1; }
+    return 0;}
 
 terminalCommand(hasLed) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("Does it have an LED [Y/n]\r\n"); }
-	switch(serialByte) {
-		case 'Y': case 'y': hasLedIO = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': hasLedIO = NO; Serial.print("  NO \r");break;
-		case '\r': return 1;
-		default : return 0; } }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("Does it have an LED [Y/n]\r\n"); }
+    switch(serialByte) {
+        case 'Y': case 'y': hasLedIO = YES; Serial.print("  YES\r"); break;
+        case 'n': case 'N': hasLedIO = NO; Serial.print("  NO \r");break;
+        case '\r': return 1;
+        default : return 0; } }
 
 terminalCommand(getLedIO) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("What is IO of LED"); }
-	if(serialByte && makeNumber(&ledIO,serialByte,0,63,'\n')) {
-		return 1; }
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("What is IO of LED"); }
+    if(serialByte && makeNumber(&ledIO,serialByte,0,63,'\n')) {
+        return 1; }
+    return 0; }
 
 terminalCommand(getSwitchType) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("What kind of turnout is this one?");
-		Serial.println("1 = Servo");
-		Serial.println("2 = Relay");
-		Serial.println("3 = 2 Coils"); }
-	if(serialByte && makeNumber(&switchType,serialByte,1,3,'\n')) {
-		return 1; }
-	return 0; } 
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("What kind of turnout is this one?");
+        Serial.println("1 = Servo");
+        Serial.println("2 = Relay");
+        Serial.println("3 = 2 Coils"); }
+    if(serialByte && makeNumber(&switchType,serialByte,1,3,'\n')) {
+        return 1; }
+    return 0; } 
 
 terminalCommand(curvedOrStraight) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("Turnout is now set at straight");
-		Serial.println("Must direction be inverted?"); }
-	switch(serialByte) {
-		case 'Y': case 'y': invertedDirection = YES; Serial.print("  YES\r"); break;
-		case 'N': case 'n': invertedDirection = NO;  Serial.print("  NO \r"); break;
-		case '\r': return 1;
-		default : return 0; } }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("Turnout is now set at straight");
+        Serial.println("Must direction be inverted?"); }
+    switch(serialByte) {
+        case 'Y': case 'y': invertedDirection = YES; Serial.print("  YES\r"); break;
+        case 'N': case 'n': invertedDirection = NO;  Serial.print("  NO \r"); break;
+        case '\r': return 1;
+        default : return 0; } }
 
 terminalCommand(adjustCurvedPosition) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("adjust curved position, 0-180, press ENTER when ready"); }
-	if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1;
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("adjust curved position, 0-180, press ENTER when ready"); }
+    if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1;
+    return 0; }
 
 terminalCommand(adjustStraightPosition) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("adjust straight position, 0-180, press ENTER when ready"); }
-	if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("adjust straight position, 0-180, press ENTER when ready"); }
+    if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;
+    return 0; }
 
 terminalCommand(removeDevice) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("enter IO of to be removed device"); }
-	if(serialByte && makeNumber(&IO,serialByte,0,255,'\n')) return 1;
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("enter IO of to be removed device"); }
+    if(serialByte && makeNumber(&IO,serialByte,0,255,'\n')) return 1;
+    return 0; }
 
 terminalCommand(storeObject) {
-	static byte response = 0;
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("STORE OBJECT? press [Y/n]"); }
-	switch(serialByte) {
-		case 'Y': case 'y': response = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': response = NO;  Serial.print("  NO \r");break;
-		case '\r': 
-		if(response == YES) {
-			Serial.println("object SAVED");
-			store(); }
-		else {
-			Serial.println("object DISCARDED"); }
-		delay(3000);
-		return 1;
-		default : return 0; } }
+    static byte response = 0;
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("STORE OBJECT? press [Y/n]"); }
+    switch(serialByte) {
+        case 'Y': case 'y': response = YES; Serial.print("  YES\r"); break;
+        case 'n': case 'N': response = NO;  Serial.print("  NO \r");break;
+        case '\r': 
+        if(response == YES) {
+            Serial.println("object SAVED");
+            store(); }
+        else {
+            Serial.println("object DISCARDED"); }
+        delay(3000);
+        return 1;
+        default : return 0; } }
 #undef terminalCommand
 
+extern byte getSubCommand() {
+    return subCommand;
+}
 
 static void nextCommand(byte x) {
-	Serial.write(12);
-	serialByte = 0;
-	subCommand = x; 
-	firstEntry = 1;
-	menuF(); 
-	if(!subCommand)Serial.write(12);} // take note this is a recursive call, it was the easiest way to print the new texts during state transition
+    Serial.write(12);
+    serialByte = 0;
+    subCommand = x; 
+    firstEntry = 1;
+    menuF(); 
+    if(!subCommand)Serial.write(12);} // take note this is a recursive call, it was the easiest way to print the new texts during state transition
 
 #define terminalCommand(x) break; case x: if(x##F())
 extern byte menuF() { // called from main
-	switch(subCommand){
-		default: {
-			nextCommand(getType); }
-		
-		terminalCommand(getType) {
-			if(type == removeDevice)	nextCommand(removeDevice);
-			else						nextCommand(getID); }
-		
-		terminalCommand(getID) 	{
-			nextCommand(getIO); }
-		
-		terminalCommand(getIO) {		
-			if		(type == turnoutObject)		nextCommand(getSwitchType);
-			else if (type == decouplerObject)	nextCommand(getDecouplerIO);
-			else 								nextCommand(hasLed); }
+    switch(subCommand){
+        default: {
+            nextCommand(getType); }
+        
+        terminalCommand(getType) {
+            if(type == removeDevice)    nextCommand(removeDevice);
+            else                        nextCommand(getID); }
+        
+        terminalCommand(getID)     {
+            nextCommand(getIO); }
+        
+        terminalCommand(getIO) {        
+            if        (type == turnoutObject)    nextCommand(getSwitchType);
+            else if (type == decouplerObject)    nextCommand(getDecouplerIO);
+            else                                 nextCommand(hasLed); }
 
-		terminalCommand(curvedOrStraight) {
-			nextCommand(storeObject); }
+        terminalCommand(curvedOrStraight) {
+            nextCommand(storeObject); }
 
-		terminalCommand(hasLed) {	
-			if(hasLedIO == YES) nextCommand(getLedIO);	
-			else 				nextCommand(storeObject); }
+        terminalCommand(hasLed) {    
+            if(hasLedIO == YES) nextCommand(getLedIO);    
+            else                nextCommand(storeObject); }
 
-		terminalCommand(getLedIO) {		
-			nextCommand(storeObject); }
+        terminalCommand(getLedIO) {        
+            nextCommand(storeObject); }
 
-		terminalCommand(getSwitchType) {
-			if(switchType == COILS 
-			|| switchType == RELAY) {
-				 nextCommand(curvedOrStraight); }
-			else nextCommand(adjustCurvedPosition); }
+        terminalCommand(getSwitchType) {
+            if(switchType == COILS 
+            || switchType == RELAY) {
+                 nextCommand(curvedOrStraight); }
+            else nextCommand(adjustCurvedPosition); }
 
-		terminalCommand(getDecouplerIO) {
-			nextCommand(hasLed); }
+        terminalCommand(getDecouplerIO) {
+            nextCommand(hasLed); }
 
-		terminalCommand(adjustCurvedPosition) {
-			nextCommand(adjustStraightPosition); }
+        terminalCommand(adjustCurvedPosition) {
+            nextCommand(adjustStraightPosition); }
 
-		terminalCommand(adjustStraightPosition) {
-			nextCommand(storeObject); }
+        terminalCommand(adjustStraightPosition) {
+            nextCommand(storeObject); }
 
-		terminalCommand(removeDevice) {
-			nextCommand(0);  
-			return 1; }
-		
-		terminalCommand(storeObject) {
-			nextCommand(0);
-			return 1; }
-		break; }
-	return 0; }
+        terminalCommand(removeDevice) {
+            nextCommand(0);  
+            return 1; }
+        
+        terminalCommand(storeObject) {
+            nextCommand(0);
+            return 1; }
+
+        break; }
+    return 0; }
 #undef terminalCommand
 
 static void store() {
-	byte j;
-	//Serial.print("IO ");Serial.println(IO);
-	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
+    byte j;
+    //Serial.print("IO ");Serial.println(IO);
+    unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 
-	if(type == turnoutObject && switchType == SERVO) {
-		eeAddress += (elementAmmount * 8); } // servo motors can have same IO as not servo devices
-	//Serial.print("eeAddress ");Serial.println(eeAddress);
-	for(j = 0; j < 8; j++) { 
-		EEPROM.write(eeAddress++, Array[j]); } }
+    if(type == turnoutObject && switchType == SERVO) {
+        eeAddress += (elementAmmount * 8); } // servo motors can have same IO as not servo devices
+    //Serial.print("eeAddress ");Serial.println(eeAddress);
+    for(j = 0; j < 8; j++) { 
+        EEPROM.write(eeAddress++, Array[j]); } }
 
 
 extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ // returns ammount of requied MCP23017 slaves depending on taught in IO
-	byte j, i, highestIO = 0, highestTurnoutIO = 0, element;
-	unsigned int eeAddress;
+    byte j, i, highestIO = 0, highestTurnoutIO = 0, element;
+    unsigned int eeAddress;
 
-	for(element = 0; element < elementAmmount * 2; element++) { // 64x
-		byte nMcp = element / 16;
-		byte pin = element % 16;
-		
-		eeAddress = element * 8;
-		EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
-		if(type != 255) {
-			if(element > highestIO) highestIO = element; 			// these lines will find the highest IO for us
-			if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
+    for(element = 0; element < elementAmmount * 2; element++) { // 64x
+        byte nMcp = element / 16;
+        byte pin = element % 16;
+        
+        eeAddress = element * 8;
+        EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
+        if(type != 255) {
+            if(element > highestIO) highestIO = element;             // these lines will find the highest IO for us
+            if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
 
-			if(type == memoryObject || type == detectorObject || type == decouplerObject) { // this will find all inputs
-				iodir += nMcp; 									// match iodir's address to corresponding mcp23017
-				*iodir |= 0x01 << pin; 							// flag pin as input
-				iodir -= nMcp; 									// set address back
+            if(type == memoryObject || type == detectorObject || type == decouplerObject) { // this will find all inputs
+                iodir += nMcp;                                     // match iodir's address to corresponding mcp23017
+                *iodir |= 0x01 << pin;                             // flag pin as input
+                iodir -= nMcp;                                     // set address back
 
-				//if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
-				if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } }// keep the highest IO counter up to date
-				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
-				// as it is defaulted to 0
+                //if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
+                if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } }// keep the highest IO counter up to date
+                // N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
+                // as it is defaulted to 0
 
-	*nMcp = highestIO / 16 + 1;
-	*nservoDrivers = highestTurnoutIO / 16 + 1; }
+    *nMcp = highestIO / 16 + 1;
+    *nservoDrivers = highestTurnoutIO / 16 + 1; }
+
+extern void track1SetState(uint8_t newState) {
+    state = newState;
+    runOnce = true;
+}

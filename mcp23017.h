@@ -15,18 +15,18 @@ enum mcp23017 {
     portB = 0x13 };
 
 class Mcp23017 {
-	public:
-	Mcp23017();
-	void init(byte, unsigned int);
-	void setIOdir(byte, byte);
-	void setPullUp(byte, byte);
-	void setPortA(byte);
-	void setPortB(byte);
-	void setPort(byte, byte);
-	byte getRegister(byte);
-	
-	private:
-	byte address; };
+    public:
+    Mcp23017();
+    void init(byte, unsigned int);
+    void setIOdir(byte, byte);
+    void setPullUp(byte, byte);
+    void setPortA(byte);
+    void setPortB(byte);
+    void setPort(byte, byte);
+    byte getRegister(byte);
+    
+    private:
+    byte address; };
 
 #endif
 
