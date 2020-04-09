@@ -53,22 +53,22 @@ railCrossing:  // does not yet exists. As more than 1 of these objects may exist
       byte 6 = servo2low
       byte 7 = servo2high
 */
-#define         ID                     Array[0]
+#define         ID                   Array[0]
 #define         type                 Array[1]
 //#define         trackAmount            Array[1]
-#define         switchType             Array[2]
-#define         detectorIO            Array[2]
+#define         switchType          Array[2]
+#define         detectorIO          Array[2]
 #define         hasLedIO            Array[2]
-#define         ledIO                 Array[3]
-#define         servoIO                Array[3]    
-#define         curvedPos             Array[3]
-#define         outputIO             Array[4]
-#define         servo1low            Array[4]
+#define         ledIO               Array[3]
+#define         servoIO             Array[3]    
+#define         curvedPos           Array[3]
+#define         outputIO            Array[4]
+#define         servo1low           Array[4]
 #define         straightPos         Array[4]
-#define         invertedDirection     Array[5]
-#define         servo1high            Array[5]
-#define         servo2low            Array[6]
-#define         servo2high            Array[7]
+#define         invertedDirection   Array[5]
+#define         servo1high          Array[5]
+#define         servo2low           Array[6]
+#define         servo2high          Array[7]
 extern byte Array[8], serialByte ,IO, firstEntry;
 
 
@@ -77,7 +77,7 @@ enum serialInstructions {
     idle = 255,
     help = 'h',
     menu = 't',
-    signalInstruction = 'S',
+    signalInstruction = 1,
     decouplerInstruction = 2,
     turnoutInstruction = 3,
     detectorInstruction = 4,

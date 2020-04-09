@@ -5,12 +5,12 @@
 
 static byte subCommand = 0;
 byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
-
+/*
 static void updateServo(byte ID, byte position) {
     unsigned int onTime, offTime, ms, pulseDuration, pulseStart;
     unsigned char servoAddress;
 
-    servoAddress = SERVO_BASE_ADDRESS + (4 * ID);
+    servoAddress = 0x06 + (4 * ID);
     ms = map(position, 0, 180, 1000, 2000);  // map degrees to milliseconds
 
     pulseStart = 0;
@@ -23,7 +23,7 @@ static void updateServo(byte ID, byte position) {
     Wire.write(pulseDuration);
     Wire.write(pulseDuration >> 8);
     Wire.endTransmission(); }
-
+*/
 #define terminalCommand(x) static byte x##F()
 terminalCommand(getType) {
     if(firstEntry) { firstEntry = 0;
@@ -207,8 +207,8 @@ extern byte menuF() { // called from main
 
 static void store() {
     byte j;
-    //Serial.print("IO ");Serial.println(IO);
-    unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
+    //Serial.println(IO);
+    unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's address in the EEPROM
 
     if(type == turnoutObject && switchType == SERVO) {
         eeAddress += (elementAmmount * 8); } // servo motors can have same IO as not servo devices
@@ -243,8 +243,3 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 
     *nMcp = highestIO / 16 + 1;
     *nservoDrivers = highestTurnoutIO / 16 + 1; }
-
-extern void track1SetState(uint8_t newState) {
-    state = newState;
-    runOnce = true;
-}

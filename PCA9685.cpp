@@ -2,14 +2,14 @@
 #include <Wire.h>
 
 enum controlRegisters {
-    MODE1                = 0x00,
-    MODE2                = 0x01,
-    SUBADR1                = 0x02,
-    SUBADR2                = 0x03,
-    SUBADR3                = 0x04,
-    ALLCALLADR            = 0x05,
-    SERVO_BASE_ADDRESS    = 0x06,
-    PRE_SCALE            = 0xFE };
+    MODE1              = 0x00,
+    MODE2              = 0x01,
+    SUBADR1            = 0x02,
+    SUBADR2            = 0x03,
+    SUBADR3            = 0x04,
+    ALLCALLADR         = 0x05,
+    SERVO_BASE_ADDRESS = 0x06,
+    PRE_SCALE          = 0xFE };
 
 union {
     unsigned char mode1;

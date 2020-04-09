@@ -91,7 +91,7 @@ void loop() {
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
     Serial.println("help menu");
-    Serial.println(    "h = help\r\n"
+    Serial.println( "h = help\r\n"
                     "t = add item\r\n"
                     "S = signalInstruction\r\n"
                     "D = decouplerInstruction\r\n"
@@ -210,23 +210,23 @@ void readSerialBus() {
 
 void readInputs() {
     byte slave, pin, element, /*IO,*/ state;
-    for(slave=0; slave<nMcp; slave++){                                          // for all MCP23017 devices
+    for(slave = 0; slave < nMcp; slave++){                                      // for all MCP23017 devices
         static unsigned int inputPrev[8] = {0,0,0,0,0,0,0,0}, input = 0;
         input = mcp[slave].getInput(portB) | (mcp[slave].getInput(portA) << 8); // read both I/O ports
-        for(pin=0;pin<16;pin++) {                                               // for all 16 I/O pins
-            if((input & (1 << pin)) != (inputPrev[slave] & (1 << pin))) {       // if an input (detector or memory) has changed...
+        for( pin = 0; pin < 16; pin++ ) {                                       // for all 16 I/O pins
+            if( (input & (1 << pin) ) != (inputPrev[slave] & (1 << pin))) {     // if an input (detector or memory) has changed...
                 inputPrev[slave] = input;
-                if(input & (1<<pin))    state = 0;                              // store the state of the changed I/O (not pressed = HIGH)
-                else                    state = 1;
+                if(input & (1<<pin)) state = 0;                                 // store the state of the changed I/O (not pressed = HIGH)
+                else                 state = 1;
                 IO = pin + slave * 16;                                          // calculate which IO has changed
-                for(element=0; element<elementAmmount; element++){              // for every rail item check if the changed IO matches
+                for( element = 0; element < elementAmmount; element++ ){        // for every rail item check if the changed IO matches
                     unsigned int eeAddress = IO * 8 ;
                     EEPROM.get(eeAddress, Array);                               // fetch ID from EEPROM
                     if(type != 255) {
                         if(!debug) sendState(state);                            // send state over serial bus
                         if(type == decouplerObject) setOutput(outputIO, state);
                         if(hasLedIO == YES)         setOutput(ledIO, state);
-                        return; } } } } } }                // if type = 255, the device is not defined
+                        return; } } } } } }                                     // if type = 255, the device is not defined
 
 //railCrossing // yet to be made, will prob be a combo of inputs for detection servo's and LEDs
 //will need a state machine
@@ -256,9 +256,9 @@ void setOutput(byte output, byte state) {    //  ID prev is to be cleared, ID is
 
 void sendState(byte state) {
     switch(type) {
-        case memoryObject: if(state)    Serial.write(memoryInstruction);    break; // only true states for memories
-        case detectorObject:             Serial.write(detectorInstruction);    break;
-        case decouplerObject:             Serial.write(decouplerInstruction);    break; }
+        case memoryObject: if(state)  Serial.write(memoryInstruction);       break; // only true states for memories
+        case detectorObject:          Serial.write(detectorInstruction);     break;
+        case decouplerObject:         Serial.write(decouplerInstruction);    break; }
 
     if(type == memoryObject) {
         if(!state) return;         // memories' low states are irrelevant to everything else, so we return
