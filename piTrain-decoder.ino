@@ -33,6 +33,11 @@ char command = 0, mcpAmmount;
 
 byte debug = false;
 
+void flushSerialBus() {
+	if(!Serial.availableForWrite()) { // if all bytes are transmitted
+		digitalWrite(serialTransmitt, LOW);
+	}
+}
 
 void setup() {
 	byte j;
@@ -77,11 +82,13 @@ void setup() {
 	//Serial.println("starting program, press 'h' for help");
 	command = 0; }
 
-void loop() {
+void loop() 
+{
 	delay(20);				    // this is just temporarily
-	
-	readInputs();
+		
+	readInputs();				
 	readSerialBus();
+	flushSerialBus();			// clears the read/write output for rs485 bus
 	//menu();
 }
 																//  V debug thing ... //
@@ -112,7 +119,7 @@ serialCommand(signalInstruction) {
 
 			if(type == signalObject && ID == signalID) { // if a switchType is found and it's ID matches
 				switch(switchType) {
-					case SERVO :/*setSwitch(IO, state);*/ break;
+					case SERVO :/*setSwitch(IO, state);*/ break; } } }
 		return 1; } }
 
 serialCommand(turnoutInstruction) {
@@ -215,6 +222,7 @@ void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to
 	//unsigned int input;
 	xMcp = output / 16;
 	pin = output % 16; // < works
+
 	if(pin < 8) {
 		port = portB; }
 	else {
@@ -229,6 +237,7 @@ void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to
 
 
 void sendState(byte state) {
+	digitalWrite(transmitt)
 	switch(type) {
 		case memoryObject: if(state)	Serial.write(memoryInstruction);	break; // only true states for memories
 		case detectorObject: 			Serial.write(detectorInstruction);	break;
