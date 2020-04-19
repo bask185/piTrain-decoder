@@ -2,6 +2,8 @@
 //#define memoryAddress 0x100
 //#define detectorAddress 0x180
 
+extern byte serialByte;
+
 #define elementAmmount 64
 
 #define YES 1

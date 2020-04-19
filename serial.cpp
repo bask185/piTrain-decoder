@@ -1,4 +1,9 @@
 #include "serial.h"
+#include "terminal.h"
+#include "src/basics/io.h"
+#include <EEPROM.h>
+
+byte command, caseSelector, debug;
 
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
@@ -32,17 +37,25 @@ serialCommand(signalInstruction) {
 serialCommand(turnoutInstruction) {
 	static byte switchID, element;
 	unsigned int eeAddres;
+	setServo(1, 135);
 	switch(caseSelector) {
-		case 0: switchID = serialByte; return 0;
+		case 0: switchID = serialByte; PORTB ^= ( 1 << 5 ); delay(1000); return 0;
 		case 1:		
-			for(element = 0; element < elementAmmount*2; element++) {
-				unsigned int eeAddress = element * 8;
-				byte IO = element;
-				//byte ID = EEPROM.read(eeAddress);
-				//byte type = EEPROM.read(eeAddres + 1);
-				byte state = serialByte;
-				if(type == turnoutObject/* && ID == switchID*/) { // if matching ID is found
-					/*setSwitch(IO, state);*/ } } } }
+		for(element = 0; element < elementAmmount*2; element++) {
+			unsigned int eeAddress = element * 8 + 512;
+			EEPROM.get(eeAddress, Array);
+			if(ID == switchID && type == turnoutObject) {
+				byte state = serialByte;PORTB ^= ( 1 << 5 ); delay(1000); 
+				if(switchType == SERVO) {
+					PORTB ^= ( 1 << 5 ); delay(1000); 
+					setServo(ID, serialByte); } } } } }
+
+
+				// //byte ID = EEPROM.read(eeAddress);
+				// //byte type = EEPROM.read(eeAddres + 1);
+				
+				// if(type == turnoutObject/* && ID == switchID*/) { // if matching ID is found
+				// 	/*setSwitch(IO, state);*/ } } } }
 
 
 serialCommand(printEEpromInstruction){
@@ -100,6 +113,10 @@ void readSerialBus() {
 
 void flushSerialBus() {
 	if(!Serial.availableForWrite()) { // if all bytes are transmitted
-		digitalWrite(serialTransmitt, LOW);
+		digitalWrite(transmissionDir, LOW);
 	}
+}
+
+void initSerial(){
+    Serial.begin(115200);
 }

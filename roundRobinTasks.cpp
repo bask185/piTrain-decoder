@@ -3,37 +3,16 @@
 #include "terminal.h"
 #include "src/basics/io.h"
 #include "src/basics/timers.h"
+#include "serial.h"
+#include <EEPROM.h>
+#include "src/modules/PCA9685.h"
 
-//ServoDriver servo;
-Mcp23017 mcp[] {	// 2 max
-	Mcp23017(),
-	Mcp23017(),
-	Mcp23017(),
-	Mcp23017() };
-
-
-void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to be set
-	static byte pinPrev, xMcpPrev;
-	byte element, xMcp, pin, port, input;
-	//unsigned int input;
-	xMcp = output / 16;
-	pin = output % 16; // < works
-
-	if(pin < 8) {
-		port = portB; }
-	else {
-		port = portA;
-		pin -= 8; }
-
-	input = mcp[xMcp].getInput(port);
-	if(state)	input |=  (1 << pin);
-	else		input &= ~(1 << pin);
-
-	mcp[xMcp].setPort(port, input); }
 
 
 void sendState(byte state) {
-	digitalWrite(transmitt)
+	digitalWrite(transmissionDir, HIGH);
+	//PORTB ^= ( 1 << 5 );
+
 	switch(type) {
 		case memoryObject: if(state)	Serial.write(memoryInstruction);	break; // only true states for memories
 		case detectorObject: 			Serial.write(detectorInstruction);	break;
@@ -60,6 +39,7 @@ void readInputs() {
 		input = mcp[slave].getInput(portB) | (mcp[slave].getInput(portA) << 8);	// read both I/O ports
 		for(pin=0;pin<16;pin++) {												// for all 16 I/O pins
 			if((input & (1 << pin)) != (inputPrev[slave] & (1 << pin))) {		// if an input (detector or memory) has changed...
+			//PORTB ^= ( 1 << 5 );
 				inputPrev[slave] = input;
 				if(input & (1<<pin))	state = 0;					  			// store the state of the changed I/O (not pressed = HIGH)
 				else					state = 1;
@@ -98,8 +78,4 @@ void processRoundRobinTasks() {
         flushSerialBus();
         break;
     }
-}
-
-void initRoundRobinTasks() {
-    Wire.begin();
 }

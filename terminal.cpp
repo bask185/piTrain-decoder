@@ -221,9 +221,9 @@ extern void loadEEPROM(byte *nMcp, byte *nservoDrivers, unsigned int *iodir){ //
 				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
 				// as it is defaulted to 0
 
-	// Serial.print("highest IO "); Serial.println(highestIO);
-	// highestIO = highestIO / 16 + 1;
-	// Serial.print("highest IO after calculation  ");Serial.println(highestIO);						
+	Serial.print("highest IO "); Serial.println(highestIO);
+	highestIO = highestIO / 16 + 1;
+	Serial.print("ammount of mcp devices  ");Serial.println(highestIO);						
 	highestTurnoutIO = highestTurnoutIO / 16 + 1; 	// highest existing IO is 31 which means 2 pca drivers 
-	*nMcp = highestIO; }
-	//*nservoDrivers= highestTurnoutIO; }
+	*nMcp = highestIO; 
+	Serial.println( highestTurnoutIO ); }
