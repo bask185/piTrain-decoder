@@ -134,5 +134,5 @@ static byte storeObjectF(byte);
 static void printLines();
 static byte getTurnoutIndex(byte _ID);
 static void store();
-extern void loadEEPROM(byte*, byte*, unsigned int*);
+extern void loadEEPROM(byte*, unsigned int*);
 static byte getIndex();

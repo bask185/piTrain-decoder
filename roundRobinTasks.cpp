@@ -5,7 +5,7 @@
 #include "src/basics/timers.h"
 #include "serial.h"
 #include <EEPROM.h>
-#include "src/modules/PCA9685.h"
+//#include "src/modules/PCA9685.h"
 
 
 
@@ -26,20 +26,19 @@ void sendState(byte state) {
 	Serial.write(ID);
 	Serial.write(state); }
 
-byte reverse(byte b) {								// not my invention
-	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-	return b;}
+// byte reverse(byte b) {								// not my invention
+// 	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+// 	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+// 	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+// 	return b;}
 
 void readInputs() {
-	byte slave, pin, element, /*IO,*/ state;
+	byte slave, pin, element, state;
 	for(slave=0; slave<nMcp; slave++){  										// for all MCP23017 devices
 		static unsigned int inputPrev[8] = {0,0,0,0,0,0,0,0}, input = 0;
 		input = mcp[slave].getInput(portB) | (mcp[slave].getInput(portA) << 8);	// read both I/O ports
 		for(pin=0;pin<16;pin++) {												// for all 16 I/O pins
 			if((input & (1 << pin)) != (inputPrev[slave] & (1 << pin))) {		// if an input (detector or memory) has changed...
-			//PORTB ^= ( 1 << 5 );
 				inputPrev[slave] = input;
 				if(input & (1<<pin))	state = 0;					  			// store the state of the changed I/O (not pressed = HIGH)
 				else					state = 1;
@@ -48,7 +47,7 @@ void readInputs() {
 					unsigned int eeAddress = IO * 8 ;
 					EEPROM.get(eeAddress, Array);								// fetch ID from EEPROM
 					if(type != 255) {
-						if(!debug) sendState(state);  
+						if(!debug) 					sendState(state);  
 						if(type == decouplerObject)	setOutput(outputIO, state);
 						if(hasLedIO == YES) 		setOutput(ledIO, state);
 						return; } } } } } }				// if type = 255, the device is not defined
