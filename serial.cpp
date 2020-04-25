@@ -3,12 +3,12 @@
 #include "src/basics/io.h"
 #include <EEPROM.h>
 
-byte command, caseSelector, debug;
+byte command = 0, caseSelector, debug;
 
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
-	Serial.println("help menu");
-	Serial.println(	"h = help\r\n"
+	Serial.println("help menu\r\n"
+					"h = help\r\n"
 					"t = add item\r\n"
 					"S = signalInstruction\r\n"
 					"D = decouplerInstruction\r\n"
@@ -24,8 +24,9 @@ serialCommand(signalInstruction) {
 	static byte signalID, element;
 	unsigned int eeAddres;
 	switch(caseSelector) {
-		case 0: signalID = serialByte; return 0;
-		case 1:		
+		case 0: return 0;
+		case 1: signalID = serialByte; return 0;
+		case 2:		
 		for(element = 0; element < elementAmmount*2; element++) {
 			unsigned int eeAddress = element * 8;
 
@@ -37,25 +38,27 @@ serialCommand(signalInstruction) {
 serialCommand(turnoutInstruction) {
 	static byte switchID, element;
 	unsigned int eeAddres;
-	setServo(1, 135);
 	switch(caseSelector) {
-		case 0: switchID = serialByte; PORTB ^= ( 1 << 5 ); delay(1000); return 0;
-		case 1:		
-		for(element = 0; element < elementAmmount*2; element++) {
-			unsigned int eeAddress = element * 8 + 512;
+		case 0: return 0; // ignore first byte
+		case 1: switchID = serialByte; return 0;
+		case 2:		
+		for( element = 0; element < elementAmmount * 2; element++ ) {
+			unsigned int eeAddress = element * 8;
 			EEPROM.get(eeAddress, Array);
+
 			if(ID == switchID && type == turnoutObject) {
-				byte state = serialByte;PORTB ^= ( 1 << 5 ); delay(1000); 
+				byte state = serialByte;
+
 				if(switchType == SERVO) {
-					PORTB ^= ( 1 << 5 ); delay(1000); 
-					setServo(ID, serialByte); } } } } }
+					setServo(ID, state);} 
 
-
-				// //byte ID = EEPROM.read(eeAddress);
-				// //byte type = EEPROM.read(eeAddres + 1);
-				
-				// if(type == turnoutObject/* && ID == switchID*/) { // if matching ID is found
-				// 	/*setSwitch(IO, state);*/ } } } }
+				else if(switchType == RELAY ) {
+					setOutput(IO, state); } 
+					
+				else if( switchType == COILS ) {
+					setOutput(IO,    state);
+					setOutput(IO+1, !state); } } }
+		return 1; } }
 
 
 serialCommand(printEEpromInstruction){
@@ -92,12 +95,13 @@ serialCommand(toggleDebugInstruction){
 
 #define serialCommand(x) case x:  if(x##F()) {command=0;} break;
 void readSerialBus() {
-	if(Serial.available()>0){
+	if(Serial.available() > 0 ){
+		
 		serialByte = Serial.read(); 
+		//Serial.println(serialByte);
 		caseSelector++;
 		if(!command) {
 			caseSelector = 0;
-			Serial.write(12);
 			command = serialByte; }			// if not yet a command was received, fetch new command
 		switch(command) {
 			default: Serial.println("command not recognized, press 'h' for help menu");command=0; break;  // if command is not recognized print this text
@@ -111,6 +115,7 @@ void readSerialBus() {
 	else serialByte = 0; }
 #undef serialCommand
 
+
 void flushSerialBus() {
 	if(!Serial.availableForWrite()) { // if all bytes are transmitted
 		digitalWrite(transmissionDir, LOW);
@@ -119,4 +124,6 @@ void flushSerialBus() {
 
 void initSerial(){
     Serial.begin(115200);
+	Serial.println("piTrainDecoder");
+	helpF();
 }

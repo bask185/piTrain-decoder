@@ -1,5 +1,6 @@
 #include "terminal.h"
 #include "src/modules/makeNumber.h"
+#include "src/basics/io.h"
 #include <EEPROM.h>
 
 
@@ -10,7 +11,7 @@ byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 #define terminalCommand(x) static byte x##F()
 terminalCommand(getType) {
 	if(firstEntry) { firstEntry = 0;
-		for(byte j=0;j<8;j++) Array[j] = 255; // initialize array before we fill in
+		for(byte j = 0 ; j < 8 ; j++ ) Array[j] = 255; // initialize array before we fill in
 		Serial.println("Enter type");
 		Serial.println("1 = turnout");
 		Serial.println("2 = memory");
@@ -31,12 +32,14 @@ terminalCommand(getType) {
 
 terminalCommand(getID) {
 	if(firstEntry) { firstEntry = 0;
+		ID = 0;
 		Serial.println("select ID 1-254, press ENTER when ready");}
 	if(serialByte && makeNumber(&ID,serialByte,1,255,'\n')) return 1; 
 	return 0; }
 
 terminalCommand(getIO) {
 	if(firstEntry) { firstEntry = 0;
+		IO = 0;
 		Serial.println("select IO 0-63, press ENTER when ready"); }
 	if(serialByte && makeNumber(&IO,serialByte,0,63,'\n')) {
 		return 1; }
@@ -87,14 +90,20 @@ terminalCommand(curvedOrStraight) {
 
 terminalCommand(adjustCurvedPosition) {
 	if(firstEntry) { firstEntry = 0;
+		curvedPos = 90;
 		Serial.println("adjust curved position, 0-180, press ENTER when ready"); }
 	if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1;
+	unsigned int us = map(curvedPos, 0, 180, 120, 490);
+	servoDriver.setPWM(IO, 0, us); // update motor at once
 	return 0; }
 
 terminalCommand(adjustStraightPosition) {
 	if(firstEntry) { firstEntry = 0;
+		straightPos = 90;
 		Serial.println("adjust straight position, 0-180, press ENTER when ready"); }
 	if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;
+	unsigned int us = map(straightPos, 0, 180, 120, 490);
+	servoDriver.setPWM(IO, 0, us); // update motor at once
 	return 0; }
 
 terminalCommand(removeDevice) {
@@ -159,9 +168,9 @@ extern byte menuF() { // called from main
 			nextCommand(storeObject); }
 
 		terminalCommand(getSwitchType) {
-			if(switchType == COILS 
-			|| switchType == RELAY) 
-				 nextCommand(curvedOrStraight); 
+			if( switchType == COILS 
+			||  switchType == RELAY ) {
+				 nextCommand(curvedOrStraight); }
 			else nextCommand(adjustCurvedPosition); }
 
 		terminalCommand(getDecouplerIO) {

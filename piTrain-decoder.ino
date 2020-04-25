@@ -10,9 +10,16 @@
 #include "src/basics/io.h"
 
 void setup() {
-	initSerial();
-	initIO();
+
+	cli();
 	initTimers();
+	sei();
+
+	
+	initIO();
+
+
+	initSerial();
 }
 
 void loop() 

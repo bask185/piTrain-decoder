@@ -10,7 +10,7 @@ byte makeNumber(byte *adress, byte serialByte, byte min, byte max, char end) {
 	
 	if(firstEntry) {							// first entry
 		firstEntry = 0;
-		numberTmp = 0; }
+		numberTmp = *adress; }
 
 	if(serialByte == '-' || serialByte == '+') { // dec or inc
 		if(serialByte == '-')  numberTmp--;		// dec

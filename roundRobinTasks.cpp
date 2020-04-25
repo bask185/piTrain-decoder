@@ -57,12 +57,10 @@ void readInputs() {
 
 
 
-byte taskCounter = 0;
-
 void processRoundRobinTasks() {    
+	static byte taskCounter = 0;
 
-    taskCounter++;
-    switch(taskCounter) {
+    switch(++taskCounter) {
         default: taskCounter = 0;
 
         case 0:
