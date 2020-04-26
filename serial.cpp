@@ -7,6 +7,7 @@ byte command = 0, caseSelector, debug;
 
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
+	Serial.write(12);
 	Serial.println("help menu\r\n"
 					"h = help\r\n"
 					"t = add item\r\n"
@@ -93,7 +94,7 @@ serialCommand(toggleDebugInstruction){
 
 #undef serialCommand
 
-#define serialCommand(x) case x:  if(x##F()) {command=0;} break;
+#define serialCommand(x) case x:  if(x##F()) {command=0;firstEntry=1;helpF();} break;
 void readSerialBus() {
 	if(Serial.available() > 0 ){
 		

@@ -50,6 +50,18 @@ void readInputs() {
 						if(!debug) 					sendState(state);  
 						if(type == decouplerObject)	setOutput(outputIO, state);
 						if(hasLedIO == YES) 		setOutput(ledIO, state);
+						if(type == signalObject) {
+							switch (signalType) {
+							case SERVO_SIGNAL: 
+								setServo(IO, state);
+								break;
+							case _2LED: 
+								setOutput(greenIO,   state);
+								setOutput(yellowIO, ~state);
+								break;
+							case _3LED: break; // no solution for the yellow LED exist yet
+							}
+						}
 						return; } } } } } }				// if type = 255, the device is not defined
 
 //railCrossing // yet to be made, will prob be a combo of inputs for detection servo's and LEDs

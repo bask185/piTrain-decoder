@@ -12,22 +12,24 @@ byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 terminalCommand(getType) {
 	if(firstEntry) { firstEntry = 0;
 		for(byte j = 0 ; j < 8 ; j++ ) Array[j] = 255; // initialize array before we fill in
+		Serial.write(12);
 		Serial.println("Enter type");
 		Serial.println("1 = turnout");
 		Serial.println("2 = memory");
 		Serial.println("3 = detector");
 		Serial.println("4 = signal");
 		Serial.println("5 = decoupler");
-		Serial.println("6 = railCrossing"); 
+		Serial.println("6 = light Circuit"); 
 		Serial.println("7 = remove item"); }
+
 	switch(serialByte) {
-		case '1': type = turnoutObject; return 1;
-		case '2': type = memoryObject; return 1;
-		case '3': type = detectorObject; return 1;
-		case '4': type = signalObject; return 1;
-		case '5': type = decouplerObject; return 1;
-		//case '6': type = Object; return 1;
-		case '7': type = removeDevice;  return 1;
+		case '1': type = turnoutObject; 		return 1;
+		case '2': type = memoryObject;			return 1;
+		case '3': type = detectorObject; 		return 1;
+		case '4': type = signalObject; 			return 1;
+		case '5': type = decouplerObject; 		return 1;
+		case '6': type = lightCircuitObject;	return 1;
+		case '7': type = removeDevice;  		return 1;
 		default: return 0; } }
 
 terminalCommand(getID) {
@@ -68,6 +70,37 @@ terminalCommand(getLedIO) {
 		return 1; }
 	return 0; }
 
+terminalCommand(getSignalType){
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("What kind of turnout is this one?");
+		Serial.println("1 = Servo");
+		Serial.println("2 = 2 LED");
+		Serial.println("3 = 3 LED"); }
+	if(serialByte && makeNumber(&signalType,serialByte,1,3,'\n')) {
+		return 1; }
+	return 0; } 
+
+terminalCommand(getGreenIO) {
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("What is IO of green LED"); }
+	if(serialByte && makeNumber(&greenIO,serialByte,0,63,'\n')) {
+		return 1; }
+	return 0; }
+
+terminalCommand(getYellowIO) {
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("What is IO of yellow LED"); }
+	if(serialByte && makeNumber(&yellowIO,serialByte,0,63,'\n')) {
+		return 1; }
+	return 0; }
+
+terminalCommand(getRedIO) {
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("What is IO of red LED"); }
+	if(serialByte && makeNumber(&redIO,serialByte,0,63,'\n')) {
+		return 1; }
+	return 0; }
+
 terminalCommand(getSwitchType) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("What kind of turnout is this one?");
@@ -91,8 +124,12 @@ terminalCommand(curvedOrStraight) {
 terminalCommand(adjustCurvedPosition) {
 	if(firstEntry) { firstEntry = 0;
 		curvedPos = 90;
-		Serial.println("adjust curved position, 0-180, press ENTER when ready"); }
-	if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1;
+		Serial.println("adjust curved position with '-' and '+', press ENTER when ready"); }
+	if( serialByte == '+' ) curvedPos++;
+	if( serialByte == '-' ) curvedPos--;
+	curvedPos = constrain( curvedPos, 1 , 170);
+	if( serialByte == '\n' ) return 1;
+	//if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1; obsolete, only use + and - to adjust position
 	unsigned int us = map(curvedPos, 0, 180, 120, 490);
 	servoDriver.setPWM(IO, 0, us); // update motor at once
 	return 0; }
@@ -100,11 +137,22 @@ terminalCommand(adjustCurvedPosition) {
 terminalCommand(adjustStraightPosition) {
 	if(firstEntry) { firstEntry = 0;
 		straightPos = 90;
-		Serial.println("adjust straight position, 0-180, press ENTER when ready"); }
-	if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;
+		Serial.println("adjust straight position with '-' and '+', press ENTER when ready"); }
+	if( serialByte == '+' ) straightPos++;
+	if( serialByte == '-' ) straightPos--;
+	straightPos = constrain( curvestraightPosdPos, 1 , 170);
+	if( serialByte == '\n' ) return 1;
+	//if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;  obsolete, only use + and - to adjust position
 	unsigned int us = map(straightPos, 0, 180, 120, 490);
 	servoDriver.setPWM(IO, 0, us); // update motor at once
 	return 0; }
+
+terminalCommand(getLightCircuitIO) {
+	if(firstEntry) { firstEntry = 0;
+		Serial.println("On which output is the light circuit relay?"); }
+	if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
+		return 1; }
+	return 0;}
 
 terminalCommand(removeDevice) {
 	if(firstEntry) { firstEntry = 0;
@@ -153,9 +201,25 @@ extern byte menuF() { // called from main
 			nextCommand(getIO); }
 		
 		terminalCommand(getIO) {		
-			if		(type == turnoutObject)		nextCommand(getSwitchType);
-			else if (type == decouplerObject)	nextCommand(getDecouplerIO);
-			else 								nextCommand(hasLed); }
+			if	   ( type == turnoutObject)			nextCommand(getSwitchType);
+			else if( type == decouplerObject)		nextCommand(getDecouplerIO);
+			else if( type == signalObject)			nextCommand(getSignalType);
+			else if( type == lightCircuitObject)	nextCommand(getLightCircuitIO);
+			else 									nextCommand(hasLed); }
+
+		terminalCommand(getSignalType) {
+			if( signalType == SERVO_SIGNAL ) nextCommand(adjustCurvedPosition);
+			else 					 		 nextCommand(getGreenIO); }
+
+		terminalCommand(getGreenIO) {
+			if(signalType == _2LED ) nextCommand(getRedIO);
+			else 					 nextCommand(getYellowIO); }
+
+		terminalCommand(getYellowIO) {
+			nextCommand(getRedIO);	}
+
+		terminalCommand(getRedIO) {
+			nextCommand(storeObject); }
 
 		terminalCommand(curvedOrStraight) {
 			nextCommand(storeObject); }
@@ -172,6 +236,9 @@ extern byte menuF() { // called from main
 			||  switchType == RELAY ) {
 				 nextCommand(curvedOrStraight); }
 			else nextCommand(adjustCurvedPosition); }
+
+		terminalCommand(getLightCircuitIO) {
+			nextCommand(hasLed); }
 
 		terminalCommand(getDecouplerIO) {
 			nextCommand(hasLed); }
