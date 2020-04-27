@@ -127,8 +127,9 @@ terminalCommand(adjustCurvedPosition) {
 		Serial.println("adjust curved position with '-' and '+', press ENTER when ready"); }
 	if( serialByte == '+' ) curvedPos++;
 	if( serialByte == '-' ) curvedPos--;
-	curvedPos = constrain( curvedPos, 1 , 170);
-	if( serialByte == '\n' ) return 1;
+	curvedPos = constrain( curvedPos, 6 , 170);
+	Serial.print(curvedPos);Serial.write('\r');
+	if( serialByte == '\n' || serialByte == '\r' ) return 1;
 	//if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1; obsolete, only use + and - to adjust position
 	unsigned int us = map(curvedPos, 0, 180, 120, 490);
 	servoDriver.setPWM(IO, 0, us); // update motor at once
@@ -140,8 +141,9 @@ terminalCommand(adjustStraightPosition) {
 		Serial.println("adjust straight position with '-' and '+', press ENTER when ready"); }
 	if( serialByte == '+' ) straightPos++;
 	if( serialByte == '-' ) straightPos--;
-	straightPos = constrain( curvestraightPosdPos, 1 , 170);
-	if( serialByte == '\n' ) return 1;
+	straightPos = constrain( straightPos, 6 , 170);
+	Serial.print(straightPos);Serial.write('\r');
+	if( serialByte == '\n' || serialByte == '\r'  ) return 1;
 	//if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;  obsolete, only use + and - to adjust position
 	unsigned int us = map(straightPos, 0, 180, 120, 490);
 	servoDriver.setPWM(IO, 0, us); // update motor at once
@@ -185,7 +187,7 @@ static void nextCommand(byte x) {
 	subCommand = x; 
 	firstEntry = 1;
 	menuF(); 
-	if(!subCommand)Serial.write(12);} // take note this is a recursive call, it was the easiest way to print the new texts during state transition
+	if(!subCommand) Serial.write(12); } // take note this is a recursive call, it was the easiest way to print the new texts during state transition
 
 #define terminalCommand(x) break; case x: if(x##F())
 extern byte menuF() { // called from main
@@ -265,11 +267,11 @@ static void store() {
 	//Serial.print("IO ");Serial.println(IO);
 	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 
-	if(type == turnoutObject && switchType == SERVO) {
+	if( (type == turnoutObject && switchType == SERVO) 
+	||	 type == signalObject  && signalType == SERVO_SIGNAL) {
 		eeAddress += (elementAmmount * 8); } // servo motors can have same IO as not servo devices
-	//Serial.print("eeAddress ");Serial.println(eeAddress);
-	for(j = 0; j < 8; j++) { 
-		EEPROM.write(eeAddress++, Array[j]); } }
+	EEPROM.put(eeAddress, Array); }
+
 
 
 extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of requied MCP23017 slaves depending on taught in IO
@@ -286,6 +288,8 @@ extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of r
 			if(element > highestIO) highestIO = element; 			// this line must record the highest IO
 																	// as element is linked to IO, element is used
 			if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
+
+			if(type == signalObject && signalType != SERVO_SIGNAL )
 
 			if(type == memoryObject || type == detectorObject || type == decouplerObject) {
 				iodir += nMcp; 									// match iodir's address to corresponding mcp23017

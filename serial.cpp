@@ -30,10 +30,16 @@ serialCommand(signalInstruction) {
 		case 2:		
 		for(element = 0; element < elementAmmount*2; element++) {
 			unsigned int eeAddress = element * 8;
+			EEPROM.get(eeAddress, Array);
 
 			if(type == signalObject && ID == signalID) { // if a switchType is found and it's ID matches
-				switch(switchType) {
-					case SERVO :/*setSwitch(IO, state);*/ break; } } }
+				byte state = serialByte;
+
+				switch(signalType) {
+					case SERVO_SIGNAL : setServo(IO, state);		  break; 
+					case _2LED: 		setOutput(greenIO,  state);
+										setOutput(  redIO, ~state);   break;
+					case _3LED: break; } } }
 		return 1; } }
 
 serialCommand(turnoutInstruction) {
@@ -49,16 +55,11 @@ serialCommand(turnoutInstruction) {
 
 			if(ID == switchID && type == turnoutObject) {
 				byte state = serialByte;
-
-				if(switchType == SERVO) {
-					setServo(ID, state);} 
-
-				else if(switchType == RELAY ) {
-					setOutput(IO, state); } 
-					
-				else if( switchType == COILS ) {
-					setOutput(IO,    state);
-					setOutput(IO+1, !state); } } }
+				switch(switchType) {
+					case SERVO: setServo(ID,  state);    break;
+					case RELAY: setOutput(IO, state);    break;
+					case COILS: setOutput(IO, state);   
+					    	    setOutput(IO+1, !state); break; } } }
 		return 1; } }
 
 

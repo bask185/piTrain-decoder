@@ -20,7 +20,7 @@ Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 void setServo(byte pin, byte _state) {
 	unsigned int us;
 
-	state &= 0b1;	// and mask to so only the 1st bit is examined
+	_state &= 0b1;	// and mask to so only the 1st bit is examined
 	if(_state) { _state = curvedPos;/* Serial.print("curvedPos "); Serial.println(curvedPos);*/}
 	else 	   { _state = straightPos;/*Serial.print("straightPos "); Serial.println(straightPos);*/}
 
@@ -30,7 +30,7 @@ void setServo(byte pin, byte _state) {
 	servoDriver.setPWM(pin, 0, us);
 }
 
-void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to be set
+void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is to be set
 	static byte pinPrev, xMcpPrev;
 
 	byte element, xMcp, pin, port, input;
@@ -46,8 +46,8 @@ void setOutput(byte output, byte state) {	//  ID prev is to be cleared, ID is to
 
 	input = mcp[xMcp].getInput(port);
 
-	state &= 0b1;	// and mask to so only the 1st bit is examined
-	if(state)	input |=  (1 << pin);
+	_state &= 0b1;	// and mask to so only the 1st bit is examined
+	if(_state)	input |=  (1 << pin);
 	else		input &= ~(1 << pin);
 
 	mcp[xMcp].setPort(port, input); }
@@ -61,7 +61,7 @@ extern void initIO(void) {
 
 	unsigned int ioDir[4] = {0,0,0,0};
 
-	loadEEPROM(&nMcp, ioDir);
+	//loadEEPROM(&nMcp, ioDir);
 
 	 for(byte j = 0 ; j < nMcp ; j++ ) {
 	 	mcp[j].init(mcpBaseAddress + j , ioDir[j]);
