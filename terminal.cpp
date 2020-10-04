@@ -49,11 +49,11 @@ terminalCommand(getIO) {
 	return 0;}
 
 terminalCommand(getDecouplerIO) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("On which output is the decoupler?"); }
-	if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
-		return 1; }
-	return 0;}
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("On which output is the decoupler?"); }
+    if(serialByte && makeNumber(&outputIO,serialByte,0,63,'\n')) {
+        return 1; }
+    return 0;}
 
 terminalCommand(hasLed) {
 	if(firstEntry) { firstEntry = 0;
@@ -65,11 +65,11 @@ terminalCommand(hasLed) {
 		default : return 0; } }
 
 terminalCommand(getLedIO) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("What is IO of LED"); }
-	if(serialByte && makeNumber(&ledIO,serialByte,0,63,'\n')) {
-		return 1; }
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("What is IO of LED"); }
+    if(serialByte && makeNumber(&ledIO,serialByte,0,63,'\n')) {
+        return 1; }
+    return 0; }
 
 terminalCommand(getSignalType){
 	if(firstEntry) { firstEntry = 0;
@@ -103,14 +103,14 @@ terminalCommand(getRedIO) {
 	return 0; }
 
 terminalCommand(getSwitchType) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("What kind of turnout is this one?");
-		Serial.println("1 = Servo");
-		Serial.println("2 = Relay");
-		Serial.println("3 = 2 Coils"); }
-	if(serialByte && makeNumber(&switchType,serialByte,1,3,'\n')) {
-		return 1; }
-	return 0; } 
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("What kind of turnout is this one?");
+        Serial.println("1 = Servo");
+        Serial.println("2 = Relay");
+        Serial.println("3 = 2 Coils"); }
+    if(serialByte && makeNumber(&switchType,serialByte,1,3,'\n')) {
+        return 1; }
+    return 0; } 
 
 terminalCommand(curvedOrStraight) {
 	if(firstEntry) { firstEntry = 0;
@@ -158,10 +158,10 @@ terminalCommand(getLightCircuitIO) {
 	return 0;}
 
 terminalCommand(removeDevice) {
-	if(firstEntry) { firstEntry = 0;
-		Serial.println("enter IO of to be removed device"); }
-	if(serialByte && makeNumber(&IO,serialByte,0,255,'\n')) return 1;
-	return 0; }
+    if(firstEntry) { firstEntry = 0;
+        Serial.println("enter IO of to be removed device"); }
+    if(serialByte && makeNumber(&IO,serialByte,0,255,'\n')) return 1;
+    return 0; }
 
 terminalCommand(storeObject) {
 	static byte response = 0;
@@ -181,6 +181,9 @@ terminalCommand(storeObject) {
 		default : return 0; } }
 #undef terminalCommand
 
+extern byte getSubCommand() {
+    return subCommand;
+}
 
 static void nextCommand(byte x) {
 	Serial.println();

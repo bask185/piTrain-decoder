@@ -4,12 +4,12 @@
 #include <Arduino.h>
 
 class PCA9685 {
-	public:
+    public:
         PCA9685();
         void init(byte);
         void setServo(byte, byte);
-	
-	private:
-	    byte address; };
+    
+    private:
+        byte address; };
 
 #endif
