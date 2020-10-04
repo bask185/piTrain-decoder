@@ -4,7 +4,11 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include "../../terminal.h"
+#include "timers.h"
+
 //#include "../modules/Adafruit_PWMServoDriver.h"
+
+byte debug = 0;
 
 Mcp23017 mcp[] {	// 2 max
 	Mcp23017(),
@@ -17,15 +21,21 @@ byte nMcp;
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 
 
+void transmitt() {
+	digitalWrite(transmissionDir, HIGH);
+	digitalWrite(ledPin, HIGH);
+	transmissionT = 50 ;
+};
+
 void setServo(byte pin, byte _state) {
 	unsigned int us;
 
 	_state &= 0b1;	// and mask to so only the 1st bit is examined
-	if(_state) { _state = curvedPos;/* Serial.print("curvedPos "); Serial.println(curvedPos);*/}
-	else 	   { _state = straightPos;/*Serial.print("straightPos "); Serial.println(straightPos);*/}
+	if(_state) { _state = curvedPos;/* Serial.println("curvedPos "); Serial.println(curvedPos);*/}
+	else 	   { _state = straightPos;/*Serial.println("straightPos "); Serial.println(straightPos);*/}
 
 	us = map(_state, 0, 180, 120, 490);
-//	Serial.print("us ");Serial.println(us);
+//	Serial.println("us ");Serial.println(us);
 
 	servoDriver.setPWM(pin, 0, us);
 }
@@ -53,20 +63,21 @@ void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is t
 	mcp[xMcp].setPort(port, input); }
 
 extern void initIO(void) {
+	transmitt();
+	Serial.println("BOOTING I2C");
 	Wire.begin();
 	
-	servoDriver.begin();
-	servoDriver.setOscillatorFrequency(27000000);
-	servoDriver.setPWMFreq(50);  // Analog servos run at ~50 Hz updates
+	//servoDriver.begin();
+	//servoDriver.setOscillatorFrequency(27000000);
+	//servoDriver.setPWMFreq(50);  // Analog servos run at ~50 Hz updates
+	Serial.println("I2C BOOTED");
 
 	unsigned int ioDir[4] = {0,0,0,0};
-
+	Serial.println("LOADING EEPROM");
 	//loadEEPROM(&nMcp, ioDir);
 
 	 for(byte j = 0 ; j < nMcp ; j++ ) {
 	 	mcp[j].init(mcpBaseAddress + j , ioDir[j]);
 	 }
-
-	pinMode(transmissionDir, OUTPUT);
-	pinMode(ledPin, OUTPUT);
+	 Serial.println("EEPROM LOADED");
 }

@@ -10,21 +10,20 @@
 
 
 void sendState(byte state) {
-	digitalWrite(transmissionDir, HIGH);
-	//PORTB ^= ( 1 << 5 );
+	transmitt();
 
 	switch(type) {
-		case memoryObject: if(state)	Serial.write(memoryInstruction);	break; // only true states for memories
-		case detectorObject: 			Serial.write(detectorInstruction);	break;
-		case decouplerObject: 			Serial.write(decouplerInstruction);	break; }
+		case memoryObject: if(state)	Serial.println(memoryInstruction);	break; // only true states for memories
+		case detectorObject: 			Serial.println(detectorInstruction);	break;
+		case decouplerObject: 			Serial.println(decouplerInstruction);	break; }
 
 	if(type == memoryObject) {
 		if(!state) return; 		// memories' low states are irrelevant to everything else, so we return
 		else /*clrMemoryLeds()*/; } // only 1 memory LED is to be set at the time
 
 	//if(hasLedIO == YES) setLED(ledIO, state); // if there is an LED to be set/cleared, make it so!
-	Serial.write(ID);
-	Serial.write(state); }
+	Serial.println(ID);
+	Serial.println(state); }
 
 // byte reverse(byte b) {								// not my invention
 // 	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;

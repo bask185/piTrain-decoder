@@ -1,17 +1,18 @@
 #include "terminal.h"
 #include "src/modules/makeNumber.h"
 #include "src/basics/io.h"
+#include "src/basics/timers.h"
 #include <EEPROM.h>
 
 
 static byte subCommand = 0;
 byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 
-
 #define terminalCommand(x) static byte x##F()
 terminalCommand(getType) {
 	if(firstEntry) { firstEntry = 0;
 		for(byte j = 0 ; j < 8 ; j++ ) Array[j] = 255; // initialize array before we fill in
+		Serial.println();
 		Serial.write(12);
 		Serial.println("Enter type");
 		Serial.println("1 = turnout");
@@ -58,8 +59,8 @@ terminalCommand(hasLed) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("Does it have an LED [Y/n]\r\n"); }
 	switch(serialByte) {
-		case 'Y': case 'y': hasLedIO = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': hasLedIO = NO; Serial.print("  NO \r");break;
+		case 'Y': case 'y': hasLedIO = YES; Serial.println("  YES\r"); break;
+		case 'n': case 'N': hasLedIO = NO; Serial.println("  NO \r");break;
 		case '\r': return 1;
 		default : return 0; } }
 
@@ -116,8 +117,8 @@ terminalCommand(curvedOrStraight) {
 		Serial.println("Turnout is now set at straight");
 		Serial.println("Is it curved?"); }
 	switch(serialByte) {
-		case 'Y': case 'y': hasLedIO = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': hasLedIO = NO;  Serial.print("  NO \r");break;
+		case 'Y': case 'y': hasLedIO = YES; Serial.println("  YES\r"); break;
+		case 'n': case 'N': hasLedIO = NO;  Serial.println("  NO \r");break;
 		case '\r': return 1;
 		default : return 0; } }
 
@@ -128,7 +129,7 @@ terminalCommand(adjustCurvedPosition) {
 	if( serialByte == '+' ) curvedPos++;
 	if( serialByte == '-' ) curvedPos--;
 	curvedPos = constrain( curvedPos, 6 , 170);
-	Serial.print(curvedPos);Serial.write('\r');
+	Serial.println(curvedPos);Serial.println('\r');
 	if( serialByte == '\n' || serialByte == '\r' ) return 1;
 	//if(serialByte && makeNumber(&curvedPos,serialByte,0,180,'\n')) return 1; obsolete, only use + and - to adjust position
 	unsigned int us = map(curvedPos, 0, 180, 120, 490);
@@ -142,7 +143,7 @@ terminalCommand(adjustStraightPosition) {
 	if( serialByte == '+' ) straightPos++;
 	if( serialByte == '-' ) straightPos--;
 	straightPos = constrain( straightPos, 6 , 170);
-	Serial.print(straightPos);Serial.write('\r');
+	Serial.println(straightPos);Serial.println('\r');
 	if( serialByte == '\n' || serialByte == '\r'  ) return 1;
 	//if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;  obsolete, only use + and - to adjust position
 	unsigned int us = map(straightPos, 0, 180, 120, 490);
@@ -167,8 +168,8 @@ terminalCommand(storeObject) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("STORE OBJECT? press [Y/n]"); }
 	switch(serialByte) {
-		case 'Y': case 'y': response = YES; Serial.print("  YES\r"); break;
-		case 'n': case 'N': response = NO;  Serial.print("  NO \r");break;
+		case 'Y': case 'y': response = YES; Serial.println("  YES\r"); break;
+		case 'n': case 'N': response = NO;  Serial.println("  NO \r");break;
 		case '\r': 
 		if(response == YES) {
 			Serial.println("object SAVED");
@@ -182,6 +183,7 @@ terminalCommand(storeObject) {
 
 
 static void nextCommand(byte x) {
+	Serial.println();
 	Serial.write(12);
 	serialByte = 0;
 	subCommand = x; 
@@ -191,6 +193,7 @@ static void nextCommand(byte x) {
 
 #define terminalCommand(x) break; case x: if(x##F())
 extern byte menuF() { // called from main
+	transmitt();
 	switch(subCommand){
 		default: {
 			nextCommand(getType); }
@@ -264,7 +267,7 @@ extern byte menuF() { // called from main
 
 static void store() {
 	byte j;
-	//Serial.print("IO ");Serial.println(IO);
+	if( debug ) Serial.println("IO ");Serial.println(IO);
 	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 
 	if( (type == turnoutObject && switchType == SERVO) 
@@ -301,9 +304,9 @@ extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of r
 				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
 				// as it is defaulted to 0
 
-	//Serial.print("highest IO "); Serial.println(highestIO);
+	if( debug ) Serial.println("highest IO "); Serial.println(highestIO);
 	highestIO = highestIO / 16 + 1;
-	//Serial.print("ammount of mcp devices  ");Serial.println(highestIO);						
+	if( debug ) Serial.println("ammount of mcp devices  ");Serial.println(highestIO);						
 	//highestTurnoutIO = highestTurnoutIO / 16 + 1; 	// highest existing IO is 31 which means 2 pca drivers 
-	*nMcp = highestIO; }
-	//Serial.println( highestTurnoutIO ); }
+	*nMcp = highestIO; 
+	if( debug ) Serial.println( highestTurnoutIO ); }

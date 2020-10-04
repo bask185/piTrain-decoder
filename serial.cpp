@@ -1,16 +1,18 @@
 #include "serial.h"
 #include "terminal.h"
 #include "src/basics/io.h"
+#include "src/basics/timers.h"
 #include <EEPROM.h>
 
-byte command = 0, caseSelector, debug;
+byte command = 0, caseSelector;
 
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
+	transmitt();
 	Serial.write(12);
 	Serial.println("help menu\r\n"
 					"h = help\r\n"
-					"t = add item\r\n"
+					"a = add item\r\n"
 					"S = signalInstruction\r\n"
 					"D = decouplerInstruction\r\n"
 					"T = turnoutInstruction\r\n"
@@ -65,12 +67,14 @@ serialCommand(turnoutInstruction) {
 
 serialCommand(printEEpromInstruction){
 	for(unsigned int j=0;j<1024;j++) {
+		transmitt();
 		byte b;
 		b = EEPROM.read(j);
-		Serial.print(j); Serial.print(" ");Serial.println(b); } 
+		Serial.println(j); Serial.println(" ");Serial.println(b); } 
 	return 1; }
 
 serialCommand(whipeEEpromInstruction) {
+	transmitt();
 	if(serialByte != 'y' && serialByte != 'n') {
 		Serial.println("this will whipe the eeprom, continue? [y/n]");
 		return 0; }
@@ -85,6 +89,7 @@ serialCommand(whipeEEpromInstruction) {
 		return 1; } }
 
 serialCommand(toggleDebugInstruction){
+	transmitt();
 	debug ^= 1;
 	if(debug) {
 		Serial.println("debug on"); }
@@ -95,37 +100,37 @@ serialCommand(toggleDebugInstruction){
 
 #undef serialCommand
 
-#define serialCommand(x) case x:  if(x##F()) {command=0;firstEntry=1;helpF();} break;
+#define serialCommand1(x) case x:  if(x##F()) {command=0;firstEntry=1;helpF();} break; // print the menu 
+#define serialCommand2(x) case x:  if(x##F()) {command=0;firstEntry=1;} break;		   // does not print the menu
 void readSerialBus() {
 	if(Serial.available() > 0 ){
-		
 		serialByte = Serial.read(); 
-		//Serial.println(serialByte);
+
 		caseSelector++;
 		if(!command) {
 			caseSelector = 0;
 			command = serialByte; }			// if not yet a command was received, fetch new command
 		switch(command) {
 			default: Serial.println("command not recognized, press 'h' for help menu");command=0; break;  // if command is not recognized print this text
-			serialCommand(help);
-			serialCommand(menu); // <-- in terminal.cpp
-			serialCommand(signalInstruction);
-			serialCommand(turnoutInstruction);
-			serialCommand(printEEpromInstruction);
-			serialCommand(whipeEEpromInstruction);
-			serialCommand(toggleDebugInstruction); } }
+			serialCommand2(help); 
+			serialCommand1(menu); // <-- in terminal.cpp
+			serialCommand2(signalInstruction);
+			serialCommand2(turnoutInstruction);
+			serialCommand1(printEEpromInstruction);
+			serialCommand1(whipeEEpromInstruction);
+			serialCommand2(toggleDebugInstruction); } }
 	else serialByte = 0; }
 #undef serialCommand
 
 
 void flushSerialBus() {
-	if(!Serial.availableForWrite()) { // if all bytes are transmitted
-		digitalWrite(transmissionDir, LOW);
-	}
+	if( transmissionT == 0 & digitalRead(transmissionDir) == HIGH ) { // if all bytes are Serial.printlned
+		digitalWrite(transmissionDir, LOW); // go to receiving mode 
+		digitalWrite(ledPin, LOW );
+	} 
 }
 
 void initSerial(){
-    Serial.begin(115200);
-	Serial.println("piTrainDecoder");
+    Serial.begin(9600);
 	helpF();
 }

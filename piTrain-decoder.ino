@@ -15,11 +15,20 @@ void setup() {
 	initTimers();
 	sei();
 
+	/*N.B. usually the following lines are done from initIO where they are supposed to be. 
+	But serial init needs io init and vice versa because of rs485 and debugging. It has become a bit messy unfortunately
+	*/
+	pinMode(transmissionDir, OUTPUT);
+	pinMode(ledPin, OUTPUT);
+	
+	Serial.println();
+	initSerial();
 	
 	initIO();
 
+	Serial.println("initialized");
 
-	initSerial();
+	
 }
 
 void loop() 

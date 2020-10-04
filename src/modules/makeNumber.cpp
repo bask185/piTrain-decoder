@@ -1,4 +1,6 @@
 #include "makeNumber.h"
+#include "../basics/io.h"
+#include "../basics/timers.h"
 
 static unsigned int numberTmp;
 static byte *numberToReturn;
@@ -28,10 +30,10 @@ byte makeNumber(byte *adress, byte serialByte, byte min, byte max, char end) {
 
 	if(numberTmp >= 1000) numberTmp = serialByte - '0';
 	*numberToReturn = numberTmp;				// return the number
-	Serial.write('\r');
+	Serial.println('\r');
 	Serial.print(numberTmp);
-	Serial.print("  ");
-	// Serial.print("firstEntry "); Serial.println(firstEntry);
+	//Serial.println("  ");
+	// Serial.println("firstEntry "); Serial.println(firstEntry);
 	if(firstEntry) numberTmp = constrain(numberTmp, min, max);
 	return firstEntry; }
 

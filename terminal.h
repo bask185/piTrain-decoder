@@ -81,7 +81,7 @@ extern byte Array[8], serialByte ,IO, firstEntry;
 enum serialInstructions { // the physical objects
 	idle = 255,
 	help = 'h',
-	menu = 't',
+	menu = 'a', // a for "add"
 	signalInstruction = 1,
 	decouplerInstruction = 2,
 	turnoutInstruction = 3,
