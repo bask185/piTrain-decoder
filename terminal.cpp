@@ -12,7 +12,6 @@ byte Array[8]={255,255,255,255,255,255,255,255}, serialByte ,IO, firstEntry;
 terminalCommand(getType) {
 	if(firstEntry) { firstEntry = 0;
 		for(byte j = 0 ; j < 8 ; j++ ) Array[j] = 255; // initialize array before we fill in
-		Serial.println();
 		Serial.write(12);
 		Serial.println("Enter type");
 		Serial.println("1 = turnout");
