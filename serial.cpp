@@ -8,8 +8,8 @@ byte command = 0, caseSelector;
 
 #define serialCommand(x) byte x##F()
 serialCommand(help) {
-	transmitt();
-	Serial.write(12);
+	beginTransmission();
+	Serial.write(12);		// delete putty screen
 	Serial.println("help menu\r\n"
 					"h = help\r\n"
 					"a = add item\r\n"
@@ -22,6 +22,7 @@ serialCommand(help) {
 					"W = whipeEEpromInstruction\r\n"
 					"d = toggleDebug");
 	return 1; }
+
 
 serialCommand(signalInstruction) {
 	static byte signalID, element;
@@ -38,11 +39,12 @@ serialCommand(signalInstruction) {
 				byte state = serialByte;
 
 				switch(signalType) {
-					case SERVO_SIGNAL : setServo(IO, state);		  break; 
+					case SERVO_SIGNAL : setServo(      IO,  state);		  break; 
 					case _2LED: 		setOutput(greenIO,  state);
 										setOutput(  redIO, ~state);   break;
 					case _3LED: break; } } }
 		return 1; } }
+
 
 serialCommand(turnoutInstruction) {
 	static byte switchID, element;
@@ -61,20 +63,20 @@ serialCommand(turnoutInstruction) {
 					case SERVO: setServo(ID,  state);    break;
 					case RELAY: setOutput(IO, state);    break;
 					case COILS: setOutput(IO, state);   
-					    	    setOutput(IO+1, !state); break; } } }
+								setOutput(IO+1, !state); break; } } }
 		return 1; } }
 
 
 serialCommand(printEEpromInstruction){
 	for(unsigned int j=0;j<1024;j++) {
-		transmitt();
+		beginTransmission();
 		byte b;
 		b = EEPROM.read(j);
-		Serial.println(j); Serial.println(" ");Serial.println(b); } 
+		Serial.print(j); Serial.println(" ");Serial.println(b); } 
 	return 1; }
 
 serialCommand(whipeEEpromInstruction) {
-	transmitt();
+	beginTransmission();
 	if(serialByte != 'y' && serialByte != 'n') {
 		Serial.println("this will whipe the eeprom, continue? [y/n]");
 		return 0; }
@@ -88,20 +90,19 @@ serialCommand(whipeEEpromInstruction) {
 		Serial.println("ABORTED");
 		return 1; } }
 
-serialCommand(toggleDebugInstruction){
-	transmitt();
-	debug ^= 1;
-	if(debug) {
-		Serial.println("debug on"); }
-	else{
-		Serial.println("debug off"); } 
-	return 1; }
+// serialCommand(toggleDebugInstruction){ OBSOLETE
+// 	beginTransmission();
+// 	debug ^= 1;
+// 	if(debug) {
+// 		Serial.println("debug on"); }
+// 	else{
+// 		Serial.println("debug off"); } 
+// 	return 1; }
 	
 
 #undef serialCommand
 
-#define serialCommand1(x) case x:  if(x##F()) {command=0;firstEntry=1;helpF();} break; // print the menu 
-#define serialCommand2(x) case x:  if(x##F()) {command=0;firstEntry=1;} break;		   // does not print the menu
+#define serialCommand(x) case x: if(x##F()) { command=0; firstEntry=1; if(debugMode) helpF(); } break;
 void readSerialBus() {
 	if(Serial.available() > 0 ){
 		serialByte = Serial.read(); 
@@ -110,24 +111,31 @@ void readSerialBus() {
 		if(!command) {
 			caseSelector = 0;
 			command = serialByte; }			// if not yet a command was received, fetch new command
+
 		switch(command) {
-			default: Serial.println("command not recognized, press 'h' for help menu");command=0; break;  // if command is not recognized print this text
-			serialCommand2(help); 
-			serialCommand1(menu); // <-- in terminal.cpp
-			serialCommand2(signalInstruction);
-			serialCommand2(turnoutInstruction);
-			serialCommand1(printEEpromInstruction);
-			serialCommand1(whipeEEpromInstruction);
-			serialCommand2(toggleDebugInstruction); } }
+			default: 
+			beginTransmission();
+			Serial.println("command not recognized, press 'h' for help menu");
+			command=0; 
+			break;  // if command is not recognized print this text
+			
+			serialCommand(help); 
+			serialCommand(menu); // <-- in terminal.cpp
+			serialCommand(signalInstruction);
+			serialCommand(turnoutInstruction);
+			serialCommand(printEEpromInstruction);
+			serialCommand(whipeEEpromInstruction); } }
+			//serialCommand2(toggleDebugInstruction); } } OBSOLETE
 	else serialByte = 0; }
 #undef serialCommand
 
 
 void flushSerialBus() {
-	if( transmissionT == 0 & digitalRead(transmissionDir) == HIGH ) { // if all bytes are Serial.printlned
+	if( debugMode == 0 ) {
+		Serial.flush();
 		digitalWrite(transmissionDir, LOW); // go to receiving mode 
-		digitalWrite(ledPin, LOW );
-	} 
+		digitalWrite(ledPin, LOW ); 
+	}
 }
 
 void initSerial(){

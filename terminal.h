@@ -14,25 +14,6 @@ extern byte serialByte;
 * all rail items contain 8 bytes, the EEPRM address is dependend on the given IO
 * an empty place in the EEPROM is defined as 255.
 
-<<<<<<< HEAD
-all:
-	  byte 0 = ID
-	  byte 1 = type
-
-turnout:
-	  byte 2 = switchType
-	servo:
-	  byte 3 = curvedPos
-	  byte 4 = straightPos
-	coil/relay:
-	  byte 5 = invertedDirection
-/*
-
-decoupler:
-	  byte 2 = hasLed  // mix has LED with ledIO? and if no IO default it to 255?
-	  byte 3 = ledIO 
-	  byte 4 = outputIO */
-=======
 turnout:
       byte 0 = ID
       byte 1 = type
@@ -49,19 +30,13 @@ decoupler:
       byte 2 = hasLed  // mix has LED with ledIO? and if no IO default it to 255?
       byte 3 = ledIO 
       byte 4 = outputIO */
->>>>>>> bfaa68c436f3a4fd00338e4e74ed6d88963afc3c
 /*
 
 memory:
-<<<<<<< HEAD
-	  byte 2 = hasLed
-	  byte 3 = ledIO */
-=======
       byte 0 = ID
       byte 1 = type
       byte 2 = hasLed
       byte 3 = ledIO */
->>>>>>> bfaa68c436f3a4fd00338e4e74ed6d88963afc3c
 /*
 
 detector:
@@ -73,20 +48,10 @@ detector:
       byte 0 = ID
       byte 1 = type
       byte 2 = hasLed
-      byte 3 = ledIO */
->>>>>>> bfaa68c436f3a4fd00338e4e74ed6d88963afc3c
-
-signal:
-	  byte 2 = signalType
-	  byte 3 = curvedPos
-	  byte 4 = straightPos
-	  byte 5 = greenIO
-	  byte 6 = yellowIO
 	  byte 7 = redIO
 /*
 <<<<<<< HEAD
 
-lightCircuit"
 	  byte 2 = hasLed
 	  byte 3 = ledIO 
 	  byte 4 = outputIO
@@ -108,7 +73,7 @@ lightCircuit"
 #define			yellowIO			Array[6]
 #define			redIO				Array[7]
 
-=======
+/*
 railCrossing:  // does not yet exists. As more than 1 of these objects may exist, 
                // a class is required for this object. each crossing also need their own state machines in order to operate
       byte 0 = ID            // rail crossing in general don't need an ID, but it might be usefull to tranmit it's state
@@ -136,12 +101,10 @@ railCrossing:  // does not yet exists. As more than 1 of these objects may exist
 #define         servo1high          Array[5]
 #define         servo2low           Array[6]
 #define         servo2high          Array[7]
->>>>>>> bfaa68c436f3a4fd00338e4e74ed6d88963afc3c
 extern byte Array[8], serialByte ,IO, firstEntry;
 
 
 
-<<<<<<< HEAD
 enum serialInstructions { // the physical objects
 	idle = 255,
 	help = 'h',
@@ -192,55 +155,7 @@ enum SIGNAL_TYPES {
 	SERVO_SIGNAL = 1,
 	_2LED,
 	_3LED };
-=======
-enum serialInstructions {
-    idle = 255,
-    help = 'h',
-    menu = 't',
-    signalInstruction = 1,
-    decouplerInstruction = 2,
-    turnoutInstruction = 3,
-    detectorInstruction = 4,
-    memoryInstruction = 5,
-    printEEpromInstruction = 'E',
-    whipeEEpromInstruction = 'W',
-    toggleDebugInstruction = 'd' };
 
-
-
-enum railItems {
-    turnoutObject = 1,
-    memoryObject,
-    detectorObject,
-    signalObject,
-    decouplerObject,
-    railCrossingObject};
-
-enum commands {
-    getType = 1,
-    getID,
-    getIO,
-    hasLed,
-    getLedIO,
-    getSwitchType,
-    getDecouplerIO,
-    curvedOrStraight,
-    adjustCurvedPosition,
-    adjustStraightPosition,
-    storeObject,
-    removeDevice };
-
-enum turnoutTypes {
-    SERVO = 1,
-    RELAY,
-    COILS };
-
-enum signalTypes {
-    ARM_SIGNAL,
-    ARM_SIGNAL_AND_LIGHT,
-    _2LIGHTS,
-    _3LIGHTS};
->>>>>>> bfaa68c436f3a4fd00338e4e74ed6d88963afc3c
 
 extern byte menuF();
 extern byte getSubCommand();

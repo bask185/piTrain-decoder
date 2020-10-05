@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-extern byte debug;
+extern byte debugMode;
 
 extern void readSerialBus();
 extern void flushSerialBus();

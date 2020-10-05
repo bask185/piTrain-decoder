@@ -24,14 +24,17 @@ terminalCommand(getType) {
 		Serial.println("7 = remove item"); }
 
 	switch(serialByte) {
-		case '1': type = turnoutObject; 		return 1;
-		case '2': type = memoryObject;			return 1;
-		case '3': type = detectorObject; 		return 1;
-		case '4': type = signalObject; 			return 1;
-		case '5': type = decouplerObject; 		return 1;
-		case '6': type = lightCircuitObject;	return 1;
-		case '7': type = removeDevice;  		return 1;
+		case '1': Serial.println("\rturnoutObject      selected");	type = turnoutObject; 		return 0;
+		case '3': Serial.println("\rdetectorObject     selected");	type = detectorObject; 		return 0;
+		case '2': Serial.println("\rmemoryObject       selected");	type = memoryObject;		return 0;
+		case '5': Serial.println("\rdecouplerObject    selected");	type = decouplerObject; 	return 0;
+		case '4': Serial.println("\rsignalObject       selected");	type = signalObject; 		return 0;
+		case '7': Serial.println("\rremoveDevice       selected");	type = removeDevice;  		return 0;
+		case '6': Serial.println("\rlightCircuitObject selected");	type = lightCircuitObject;	return 0;
+		case '\r': return 1;
 		default: return 0; } }
+
+
 
 terminalCommand(getID) {
 	if(firstEntry) { firstEntry = 0;
@@ -59,10 +62,10 @@ terminalCommand(hasLed) {
 	if(firstEntry) { firstEntry = 0;
 		Serial.println("Does it have an LED [Y/n]\r\n"); }
 	switch(serialByte) {
-		case 'Y': case 'y': hasLedIO = YES; Serial.println("  YES\r"); break;
-		case 'n': case 'N': hasLedIO = NO; Serial.println("  NO \r");break;
+		case 'Y': case 'y': hasLedIO = YES; Serial.println("  YES\r"); return 0; 
+		case 'n': case 'N': hasLedIO = NO; Serial.println("  NO \r");  return 0; 
 		case '\r': return 1;
-		default : return 0; } }
+		default  : return 0; } }
 
 terminalCommand(getLedIO) {
     if(firstEntry) { firstEntry = 0;
@@ -195,8 +198,9 @@ static void nextCommand(byte x) {
 	if(!subCommand) Serial.write(12); } // take note this is a recursive call, it was the easiest way to print the new texts during state transition
 
 #define terminalCommand(x) break; case x: if(x##F())
-extern byte menuF() { // called from main
-	transmitt();
+extern byte menuF() { 		// called from main
+	beginTransmission();	// upon every received byte, we are most likely going to send stuff back
+
 	switch(subCommand){
 		default: {
 			nextCommand(getType); }
@@ -270,7 +274,7 @@ extern byte menuF() { // called from main
 
 static void store() {
 	byte j;
-	if( debug ) Serial.println("IO ");Serial.println(IO);
+	if( debugMode ) Serial.println("IO ");Serial.println(IO);
 	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 
 	if( (type == turnoutObject && switchType == SERVO) 
@@ -307,9 +311,9 @@ extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of r
 				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
 				// as it is defaulted to 0
 
-	if( debug ) Serial.println("highest IO "); Serial.println(highestIO);
+	if( debugMode ) Serial.println("highest IO "); Serial.println(highestIO);
 	highestIO = highestIO / 16 + 1;
-	if( debug ) Serial.println("ammount of mcp devices  ");Serial.println(highestIO);						
+	if( debugMode ) Serial.println("ammount of mcp devices  ");Serial.println(highestIO);						
 	//highestTurnoutIO = highestTurnoutIO / 16 + 1; 	// highest existing IO is 31 which means 2 pca drivers 
 	*nMcp = highestIO; 
-	if( debug ) Serial.println( highestTurnoutIO ); }
+	if( debugMode ) Serial.println( highestTurnoutIO ); }

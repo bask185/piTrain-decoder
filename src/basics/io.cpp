@@ -8,7 +8,7 @@
 
 //#include "../modules/Adafruit_PWMServoDriver.h"
 
-byte debug = 0;
+byte debugMode = 0;
 
 Mcp23017 mcp[] {	// 2 max
 	Mcp23017(),
@@ -21,10 +21,9 @@ byte nMcp;
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 
 
-void transmitt() {
+void beginTransmission() {
 	digitalWrite(transmissionDir, HIGH);
 	digitalWrite(ledPin, HIGH);
-	transmissionT = 50 ;
 };
 
 void setServo(byte pin, byte _state) {
@@ -63,7 +62,7 @@ void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is t
 	mcp[xMcp].setPort(port, input); }
 
 extern void initIO(void) {
-	transmitt();
+	beginTransmission();
 	Serial.println("BOOTING I2C");
 	Wire.begin();
 	

@@ -10,7 +10,7 @@
 
 
 void sendState(byte state) {
-	transmitt();
+	beginTransmission();
 
 	switch(type) {
 		case memoryObject: if(state)	Serial.println(memoryInstruction);	break; // only true states for memories
@@ -46,7 +46,7 @@ void readInputs() {
 					unsigned int eeAddress = IO * 8 ;
 					EEPROM.get(eeAddress, Array);								// fetch ID from EEPROM
 					if(type != 255) {
-						if(!debug) 					sendState(state);  
+						if(!debugMode) 				sendState(state);  
 						if(type == decouplerObject)	setOutput(outputIO, state);
 						if(hasLedIO == YES) 		setOutput(ledIO, state);
 						if(type == signalObject) {
