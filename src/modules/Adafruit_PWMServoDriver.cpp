@@ -124,7 +124,7 @@ void Adafruit_PWMServoDriver::setExtClk(uint8_t prescale) {
   write8(PCA9685_MODE1, (newmode & ~MODE1_SLEEP) | MODE1_RESTART | MODE1_AI);
 
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Mode now 0x");
+  Serial.println(F("Mode now 0x"));
   Serial.println(read8(PCA9685_MODE1), HEX);
 #endif
 }
@@ -135,7 +135,7 @@ void Adafruit_PWMServoDriver::setExtClk(uint8_t prescale) {
  */
 void Adafruit_PWMServoDriver::setPWMFreq(float freq) {
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Attempting to set freq ");
+  Serial.println(F("Attempting to set freq "));
   Serial.println(freq);
 #endif
   // Range output modulation frequency is dependant on oscillator
@@ -152,7 +152,7 @@ void Adafruit_PWMServoDriver::setPWMFreq(float freq) {
   uint8_t prescale = (uint8_t)prescaleval;
 
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Final pre-scale: ");
+  Serial.println(F("Final pre-scale: "));
   Serial.println(prescale);
 #endif
 
@@ -166,7 +166,7 @@ void Adafruit_PWMServoDriver::setPWMFreq(float freq) {
   write8(PCA9685_MODE1, oldmode | MODE1_RESTART | MODE1_AI);
 
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Mode now 0x");
+  Serial.println(F("Mode now 0x"));
   Serial.println(read8(PCA9685_MODE1), HEX);
 #endif
 }
@@ -188,9 +188,9 @@ void Adafruit_PWMServoDriver::setOutputMode(bool totempole) {
   }
   write8(PCA9685_MODE2, newmode);
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Setting output mode: ");
-  Serial.println(totempole ? "totempole" : "open drain");
-  Serial.println(" by setting MODE2 to ");
+  Serial.println(F("Setting output mode: "));
+  Serial.println(totempole ? "totempole" : "open drain"));
+  Serial.println(F(" by setting MODE2 to "));
   Serial.println(newmode);
 #endif
 }
@@ -221,11 +221,11 @@ uint8_t Adafruit_PWMServoDriver::getPWM(uint8_t num) {
  */
 void Adafruit_PWMServoDriver::setPWM(uint8_t num, uint16_t on, uint16_t off) {
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Setting PWM ");
+  Serial.println(F("Setting PWM "));
   Serial.println(num);
-  Serial.println(": ");
+  Serial.println(F(": "));
   Serial.println(on);
-  Serial.println("->");
+  Serial.println(F("->"));
   Serial.println(off);
 #endif
 
@@ -283,11 +283,11 @@ void Adafruit_PWMServoDriver::setPin(uint8_t num, uint16_t val, bool invert) {
 void Adafruit_PWMServoDriver::writeMicroseconds(uint8_t num,
                                                 uint16_t Microseconds) {
 #ifdef ENABLE_DEBUG_OUTPUT
-  Serial.println("Setting PWM Via Microseconds on output");
+  Serial.println(F("Setting PWM Via Microseconds on output"));
   Serial.println(num);
-  Serial.println(": ");
+  Serial.println(F(": "));
   Serial.println(Microseconds);
-  Serial.println("->");
+  Serial.println(F("->"));
 #endif
 
   double pulse = Microseconds;
@@ -299,7 +299,7 @@ void Adafruit_PWMServoDriver::writeMicroseconds(uint8_t num,
 
 #ifdef ENABLE_DEBUG_OUTPUT
   Serial.println(prescale);
-  Serial.println(" PCA9685 chip prescale");
+  Serial.println(F(" PCA9685 chip prescale"));
 #endif
 
   // Calculate the pulse for PWM based on Equation 1 from the datasheet section
@@ -310,14 +310,14 @@ void Adafruit_PWMServoDriver::writeMicroseconds(uint8_t num,
 
 #ifdef ENABLE_DEBUG_OUTPUT
   Serial.println(pulselength);
-  Serial.println(" us per bit");
+  Serial.println(F(" us per bit"));
 #endif
 
   pulse /= pulselength;
 
 #ifdef ENABLE_DEBUG_OUTPUT
   Serial.println(pulse);
-  Serial.println(" pulse for PWM");
+  Serial.println(F(" pulse for PWM"));
 #endif
 
   setPWM(num, 0, pulse);

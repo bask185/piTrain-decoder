@@ -22,15 +22,20 @@ void setup() {
 	pinMode( ledPin, OUTPUT );
     pinMode( debugPin, INPUT_PULLUP );
 
-	if( digitalRead( debugPin ) ){
-		debugMode = false ;
-	} else {
-		debugMode =  true ; // jumper is applied
-		digitalWrite( transmissionDir , HIGH ) ; // when using the USB cable, this line must be high or the communication to PC will fail
-	}
-	
 	initSerial();
-	
+
+	if( digitalRead( debugPin ) ){
+		debugMode = 0 ;
+		Serial.println(F("booting in normal mode"));
+		delay(1000);
+	} else {
+		debugMode =  1 ; // jumper is applied
+		digitalWrite( transmissionDir , HIGH ) ; // when using the USB cable, this line must be high or the communication to PC will fail
+		digitalWrite( ledPin, HIGH );
+		Serial.println(F("booting in config mode"));
+		delay(1000);
+	}
+
 	initIO();
 }
 

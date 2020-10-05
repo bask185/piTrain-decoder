@@ -22,7 +22,7 @@ byte makeNumber(byte *adress, byte serialByte, byte min, byte max, char end) {
 		numberTmp *= 10;						// multiply the number by 10
 		numberTmp += (serialByte-'0'); }  		// add the new number
 
-	if(serialByte == 127) {//backspace in putty	// devide number by 10, effecively removes the previously added number
+	if(serialByte == 127) {						//backspace in putty  devide number by 10, effecively removes the previously added number
 		numberTmp /= 10; }
 
 	if(serialByte == '\r') {						// if end character ...
@@ -30,10 +30,9 @@ byte makeNumber(byte *adress, byte serialByte, byte min, byte max, char end) {
 
 	if(numberTmp >= 1000) numberTmp = serialByte - '0';
 	*numberToReturn = numberTmp;				// return the number
-	Serial.println('\r');
+	Serial.print('\r');
 	Serial.print(numberTmp);
-	//Serial.println("  ");
-	// Serial.println("firstEntry "); Serial.println(firstEntry);
+
 	if(firstEntry) numberTmp = constrain(numberTmp, min, max);
 	return firstEntry; }
 

@@ -10,7 +10,7 @@ byte command = 0, caseSelector;
 serialCommand(help) {
 	beginTransmission();
 	Serial.write(12);		// delete putty screen
-	Serial.println("help menu\r\n"
+	Serial.println(F("help menu\r\n"
 					"h = help\r\n"
 					"a = add item\r\n"
 					"S = signalInstruction\r\n"
@@ -20,7 +20,7 @@ serialCommand(help) {
 					"M = memoryInstruction\r\n"
 					"E = printEEpromInstruction\r\n"
 					"W = whipeEEpromInstruction\r\n"
-					"d = toggleDebug");
+					));
 	return 1; }
 
 
@@ -72,37 +72,38 @@ serialCommand(printEEpromInstruction){
 		beginTransmission();
 		byte b;
 		b = EEPROM.read(j);
-		Serial.print(j); Serial.println(" ");Serial.println(b); } 
+		Serial.print(j); Serial.print(F(" "));Serial.println(b); } 
 	return 1; }
 
 serialCommand(whipeEEpromInstruction) {
 	beginTransmission();
 	if(serialByte != 'y' && serialByte != 'n') {
-		Serial.println("this will whipe the eeprom, continue? [y/n]");
+		Serial.println(F("this will whipe the eeprom, continue? [y/n]"));
 		return 0; }
 	else if(serialByte == 'y') {
-		Serial.println("WHIPING EEPROM, STANDBYE...");
+		Serial.println(F("WHIPING EEPROM, STANDBYE..."));
 		for(unsigned int j=0;j<1024;j++) {
 			EEPROM.write(j,255); } 
-		Serial.println("EEPROM WHIPED!"	);
+		Serial.println(F("EEPROM WHIPED!"));
 		return 1; }
 	else if(serialByte == 'n') {
-		Serial.println("ABORTED");
+		Serial.println(F("ABORTED"));
 		return 1; } }
 
 // serialCommand(toggleDebugInstruction){ OBSOLETE
 // 	beginTransmission();
 // 	debug ^= 1;
 // 	if(debug) {
-// 		Serial.println("debug on"); }
-// 	else{
-// 		Serial.println("debug off"); } 
+// 		Serial.println(F("debug on")); }
+// 	else {
+// 		Serial.println(F("debug off")); } 
 // 	return 1; }
 	
 
 #undef serialCommand
 
 #define serialCommand(x) case x: if(x##F()) { command=0; firstEntry=1; if(debugMode) helpF(); } break;
+#define serialCommand1(x) case x: if(x##F()) { command=0; firstEntry=1;} break;
 void readSerialBus() {
 	if(Serial.available() > 0 ){
 		serialByte = Serial.read(); 
@@ -115,7 +116,7 @@ void readSerialBus() {
 		switch(command) {
 			default: 
 			beginTransmission();
-			Serial.println("command not recognized, press 'h' for help menu");
+			Serial.println(F("command not recognized, press 'h' for help menu"));
 			command=0; 
 			break;  // if command is not recognized print this text
 			
@@ -123,7 +124,7 @@ void readSerialBus() {
 			serialCommand(menu); // <-- in terminal.cpp
 			serialCommand(signalInstruction);
 			serialCommand(turnoutInstruction);
-			serialCommand(printEEpromInstruction);
+			serialCommand1(printEEpromInstruction);
 			serialCommand(whipeEEpromInstruction); } }
 			//serialCommand2(toggleDebugInstruction); } } OBSOLETE
 	else serialByte = 0; }
@@ -140,5 +141,5 @@ void flushSerialBus() {
 
 void initSerial(){
     Serial.begin(9600);
-	helpF();
+	if( debugMode  ) helpF();
 }

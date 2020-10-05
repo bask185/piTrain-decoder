@@ -37,25 +37,8 @@ memory:
       byte 1 = type
       byte 2 = hasLed
       byte 3 = ledIO */
-/*
 
-detector:
-<<<<<<< HEAD
-	  byte 2 = hasLed
-	  byte 3 = ledIO */
-/*
-=======
-      byte 0 = ID
-      byte 1 = type
-      byte 2 = hasLed
-	  byte 7 = redIO
-/*
-<<<<<<< HEAD
 
-	  byte 2 = hasLed
-	  byte 3 = ledIO 
-	  byte 4 = outputIO
-*/
 
 #define 		ID 					Array[0]
 #define 		type 				Array[1]
@@ -73,37 +56,7 @@ detector:
 #define			yellowIO			Array[6]
 #define			redIO				Array[7]
 
-/*
-railCrossing:  // does not yet exists. As more than 1 of these objects may exist, 
-               // a class is required for this object. each crossing also need their own state machines in order to operate
-      byte 0 = ID            // rail crossing in general don't need an ID, but it might be usefull to tranmit it's state
-      byte 1 = trackAmount
-      byte 2 = detectorIO    // 2 or 4 following IO depending on track ammount
-      byte 3 = servoIO        // used 2 following IO pins
-      byte 4 = servo1low
-      byte 5 = servo1high
-      byte 6 = servo2low
-      byte 7 = servo2high
-*/
-#define         ID                   Array[0]
-#define         type                 Array[1]
-//#define         trackAmount            Array[1]
-#define         switchType          Array[2]
-#define         detectorIO          Array[2]
-#define         hasLedIO            Array[2]
-#define         ledIO               Array[3]
-#define         servoIO             Array[3]    
-#define         curvedPos           Array[3]
-#define         outputIO            Array[4]
-#define         servo1low           Array[4]
-#define         straightPos         Array[4]
-#define         invertedDirection   Array[5]
-#define         servo1high          Array[5]
-#define         servo2low           Array[6]
-#define         servo2high          Array[7]
 extern byte Array[8], serialByte ,IO, firstEntry;
-
-
 
 enum serialInstructions { // the physical objects
 	idle = 255,
