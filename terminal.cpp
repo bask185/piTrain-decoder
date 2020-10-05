@@ -299,7 +299,7 @@ extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of r
 																	// as element is linked to IO, element is used
 			if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
 
-			if(type == signalObject && signalType != SERVO_SIGNAL )
+			if(type == signalObject && signalType != SERVO_SIGNAL ) highestIO = outputIO;
 
 			if(type == memoryObject || type == detectorObject || type == decouplerObject) {
 				iodir += nMcp; 									// match iodir's address to corresponding mcp23017

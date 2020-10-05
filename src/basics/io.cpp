@@ -61,7 +61,7 @@ void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is t
 
 	mcp[xMcp].setPort(port, input); }
 
-extern void initIO(void) {
+void initIO(void) {
 	beginTransmission();
 	Serial.println("BOOTING I2C");
 	Wire.begin();
@@ -73,7 +73,7 @@ extern void initIO(void) {
 
 	unsigned int ioDir[4] = {0,0,0,0};
 	Serial.println("LOADING EEPROM");
-	//loadEEPROM(&nMcp, ioDir);
+	loadEEPROM(&nMcp, ioDir);
 
 	 for(byte j = 0 ; j < nMcp ; j++ ) {
 	 	mcp[j].init(mcpBaseAddress + j , ioDir[j]);
