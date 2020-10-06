@@ -14,13 +14,10 @@ void sendState(byte state) {
 	Serial.write( instruction4cental ) ; // flag message that it is ment for the central and not other slave
 
 	switch(type) {
-		case memoryObject: if(state)	Serial.write(memoryInstruction);	break; // only true states for memories
+		case memoryObject:/*if(state)*/	Serial.write(memoryInstruction);	break; // only true states for memories
 		case detectorObject: 			Serial.write(detectorInstruction);	break;
-		case decouplerObject: 			Serial.write(decouplerInstruction);	break; }
-
-	if(type == memoryObject) {
-		if(!state) return; 		// memories' low states are irrelevant to everything else, so we return
-		else /*clrMemoryLeds()*/; } // only 1 memory LED is to be set at the time
+		case decouplerObject: 			Serial.write(decouplerInstruction);	break; 
+	}
 
 	Serial.write(ID);
 	Serial.write(state);
