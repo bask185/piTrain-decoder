@@ -5,31 +5,31 @@
 #include "src/basics/timers.h"
 #include "serial.h"
 #include <EEPROM.h>
-//#include "src/modules/PCA9685.h"
 
 
 
 void sendState(byte state) {
 	beginTransmission();
 
+	Serial.write( instruction4cental ) ; // flag message that it is ment for the central and not other slave
+
 	switch(type) {
-		case memoryObject: if(state)	Serial.println(memoryInstruction);	break; // only true states for memories
-		case detectorObject: 			Serial.println(detectorInstruction);	break;
-		case decouplerObject: 			Serial.println(decouplerInstruction);	break; }
+		case memoryObject: if(state)	Serial.write(memoryInstruction);	break; // only true states for memories
+		case detectorObject: 			Serial.write(detectorInstruction);	break;
+		case decouplerObject: 			Serial.write(decouplerInstruction);	break; }
 
 	if(type == memoryObject) {
 		if(!state) return; 		// memories' low states are irrelevant to everything else, so we return
 		else /*clrMemoryLeds()*/; } // only 1 memory LED is to be set at the time
 
-	//if(hasLedIO == YES) setLED(ledIO, state); // if there is an LED to be set/cleared, make it so!
-	Serial.println(ID);
-	Serial.println(state); }
+	Serial.write(ID);
+	Serial.write(state);
 
-// byte reverse(byte b) {								// not my invention
-// 	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-// 	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-// 	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-// 	return b;}
+	Serial.write( instruction4cental ) ; // mark end of message
+
+	if(hasLedIO == YES) setLED(ledIO, state); // if there is an LED to be set/cleared, make it so!
+}
+
 
 void readInputs() {
 	byte slave, pin, element, state;

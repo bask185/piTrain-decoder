@@ -22,21 +22,21 @@ uint8_t Mcp23017::init(byte _address, unsigned int ioDir) {
     Wire.write(ioDir);
     uint8_t error = Wire.endTransmission();
 
-    if( error ) return true; // when this happens the slave is not present or defective
+    if( error ) return 1;                // slave is not present or defective
 
     Wire.beginTransmission(address);
     Wire.write(pullUpRegA);
-    Wire.write(ioDir>>8);                    // pullup setting must be the same for iodir setting
+    Wire.write(ioDir>>8);                   // pullup setting must be the same for iodir setting
     Wire.write(ioDir);
     Wire.endTransmission();
     
-    Wire.beginTransmission(address);    // initialize all outputs to 0
+    Wire.beginTransmission(address);        // initialize all outputs to 0
     Wire.write(portA);
     Wire.write(0);
     Wire.write(0);
     Wire.endTransmission();
     
-    return false;
+    return 0;
 }
 
 void Mcp23017::setIOdir(byte iodirA, byte iodirB) {

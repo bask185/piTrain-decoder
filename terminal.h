@@ -60,17 +60,20 @@ extern byte Array[8], serialByte ,IO, firstEntry;
 
 enum serialInstructions { // the physical objects
 	idle = 255,
+
 	help = 'h',
-	menu = 'a', // a for "add"
+	menu = 'a',
+	printEEpromInstruction = 'E',
+	whipeEEpromInstruction = 'W',
+	instruction4cental = 0xff,
+
 	signalInstruction = 1,
 	decouplerInstruction = 2,
 	turnoutInstruction = 3,
 	detectorInstruction = 4,
 	memoryInstruction = 5,
 	lightCircuitInstruction = 6,
-	printEEpromInstruction = 'E',
-	whipeEEpromInstruction = 'W',
-	toggleDebugInstruction = 'd' };
+};
 
 enum RAIL_ITEMS { // the physical objects
 	turnoutObject = 1,

@@ -28,7 +28,7 @@ serialCommand(signalInstruction) {
 	static byte signalID, element;
 	unsigned int eeAddres;
 	switch(caseSelector) {
-		case 0: return 0;
+		case 0: return 0;	// discard first byte
 		case 1: signalID = serialByte; return 0;
 		case 2:		
 		for(element = 0; element < elementAmmount*2; element++) {
@@ -90,6 +90,16 @@ serialCommand(whipeEEpromInstruction) {
 		Serial.println(F("ABORTED"));
 		return 1; } }
 
+serialCommand( instruction4cental ) {
+	switch(caseSelector) {
+		case 0: return 0;	// discard first byte
+		default:
+		if( serialByte == instruction4cental ) return 1 ; 
+		return 0 ;
+	}
+
+}
+
 // serialCommand(toggleDebugInstruction){ OBSOLETE
 // 	beginTransmission();
 // 	debug ^= 1;
@@ -100,10 +110,28 @@ serialCommand(whipeEEpromInstruction) {
 // 	return 1; }
 	
 
-#undef serialCommand
+#undef serialCommand 
 
-#define serialCommand(x) case x: if(x##F()) { command=0; firstEntry=1; if(debugMode) helpF(); } break;
+#define discard serialCommand // same thing really..
 #define serialCommand1(x) case x: if(x##F()) { command=0; firstEntry=1;} break;
+
+
+
+/* serial protocol
+OUTGOING COMMANDS TO CENTRAL: // Are also received by other slave and are to be ignored by them
+- 0xFF + 5 + ID + state + 0xFF // memoryInstruction
+- 0xFF + 4 + ID + state + 0xFF // detectorInstruction
+- 0xFF + 2 + ID + state + 0xFF // decouplerInstruction
+
+INCOMMING COMMANDS FROM CENTRAL:
+
+signalInstruction
+turnoutInstruction
+
+
+
+*/
+
 void readSerialBus() {
 	if(Serial.available() > 0 ){
 		serialByte = Serial.read(); 
@@ -116,15 +144,17 @@ void readSerialBus() {
 		switch(command) {
 			default: 
 			beginTransmission();
-			Serial.println(F("command not recognized, press 'h' for help menu"));
+			if( debugMode) Serial.println(F("command not recognized, press 'h' for help menu"));
 			command=0; 
 			break;  // if command is not recognized print this text
+
+			discard( instruction4cental ) ;	// may be transmitted by other slaves
 			
 			serialCommand(help); 
 			serialCommand(menu); // <-- in terminal.cpp
 			serialCommand(signalInstruction);
 			serialCommand(turnoutInstruction);
-			serialCommand1(printEEpromInstruction);
+			serialCommand(printEEpromInstruction);
 			serialCommand(whipeEEpromInstruction); } }
 			//serialCommand2(toggleDebugInstruction); } } OBSOLETE
 	else serialByte = 0; }
