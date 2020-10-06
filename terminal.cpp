@@ -128,12 +128,13 @@ terminalCommand(curvedOrStraight) {
 terminalCommand(adjustCurvedPosition) {
 	if(firstEntry) { firstEntry = 0;
 		curvedPos = 90;
-		Serial.println(F("adjust curved position with '-' and '+', press ENTER when ready")); }
+		Serial.println(F("adjust curved position with '-' and '+', press ENTER when ready"));
+	}
 	if( serialByte == '+' ) curvedPos++;
 	if( serialByte == '-' ) curvedPos--;
 	curvedPos = constrain( curvedPos, 6 , 170);
-	Serial.println('\r');
-	Serial.println(curvedPos);
+	Serial.print('\r'); Serial.println(curvedPos);
+
 	unsigned int us = map(curvedPos, 0, 180, 120, 490);
 	//servoDriver.setPWM(IO, 0, us); // update motor at once
 	if( serialByte == '\n' || serialByte == '\r' ) return 1;
@@ -142,15 +143,17 @@ terminalCommand(adjustCurvedPosition) {
 terminalCommand(adjustStraightPosition) {
 	if(firstEntry) { firstEntry = 0;
 		straightPos = 90;
-		Serial.println(F("adjust straight position with '-' and '+', press ENTER when ready")); }
+		Serial.println(F("adjust straight position with '-' and '+', press ENTER when ready"));
+	}
 	if( serialByte == '+' ) straightPos++;
 	if( serialByte == '-' ) straightPos--;
 	straightPos = constrain( straightPos, 6 , 170);
-	Serial.println(straightPos);Serial.println('\r');
-	if( serialByte == '\n' || serialByte == '\r'  ) return 1;
-	//if(serialByte && makeNumber(&straightPos,serialByte,0,180,'\n')) return 1;  obsolete, only use + and - to adjust position
+	Serial.print(straightPos);Serial.println('\r');
+
 	unsigned int us = map(straightPos, 0, 180, 120, 490);
 	//servoDriver.setPWM(IO, 0, us); // update motor at once
+
+	if( serialByte == '\n' || serialByte == '\r'  ) return 1;
 	return 0; }
 
 terminalCommand(getLightCircuitIO) {
@@ -196,8 +199,8 @@ static void nextCommand(byte x) {
 	serialByte = 0;
 	subCommand = x; 
 	firstEntry = 1;
-	menuF(); 
-	if(!subCommand) Serial.write(12); } // take note this is a recursive call, it was the easiest way to print the new texts during state transition
+	menuF(); // take note this is a recursive call, it was the easiest way to print the new texts during state transition
+	if(!subCommand) Serial.write(12); } 
 
 #define terminalCommand(x) break; case x: if(x##F())
 extern byte menuF() { 		// called from main
@@ -277,7 +280,7 @@ extern byte menuF() { 		// called from main
 static void store() {
 	byte j;
 	if( debugMode ) Serial.println(F("IO "));Serial.println(IO);
-	unsigned int eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
+	uint16_t eeAddress = IO * 8;  // the physical IO is linked with it's position the EEPROM
 
 	if( (type == turnoutObject && switchType == SERVO) 
 	||	 type == signalObject  && signalType == SERVO_SIGNAL) {
@@ -286,54 +289,22 @@ static void store() {
 
 
 
-extern void loadEEPROM(byte *nMcp, unsigned int *iodir){ // returns ammount of requied MCP23017 slaves depending on taught in IO
+extern void loadEEPROM(uint16_t *iodir){ // returns ammount of requied MCP23017 slaves depending on taught in IO
 	byte j, i, highestIO = 0, highestTurnoutIO = 0, element;
-	unsigned int eeAddress;
+	uint16_t eeAddress;
 
 	for(element = 0; element < elementAmmount ; element++) { // 64x
-		byte nMcp = element / 16;
+		byte xMcp = element / 16;
 		byte pin = element % 16;
 		
 		eeAddress = element * 8;
-		EEPROM.get(eeAddress, Array); // fetches rail item type, we need inputs, these are 
-		if(type != 255) {
-			Serial.print("type "); Serial.println(type);
+		EEPROM.get(eeAddress, Array);
 
-			if(element > highestIO) highestIO = element; 			// this line must record the highest IO CONFLICTS WITH SERVO OBJECTS
-																	// as element is linked to IO, element is used
-			if(type == decouplerObject && outputIO > highestIO) { 
-				highestIO = outputIO;
-				if(debugMode) {
-					Serial.println(F(" decoupler added"));
-				}
-			}
-
-			if(type == signalObject && signalType != SERVO_SIGNAL ) {
-				highestIO = outputIO;
-				if(debugMode) {
-					Serial.println(F(" signalObject added"));
-				}
-			}
-
-			if(type == memoryObject || type == detectorObject || type == decouplerObject) {
-				iodir += nMcp; 									// match iodir's address to corresponding mcp23017
-				*iodir |= 0x01 << pin; 							// flag pin as input
-				iodir -= nMcp; 									// set address back
-				if(debugMode) {
-					Serial.print(F("added "));Serial.print(memoryObject);Serial.print(F(" as element "));Serial.println(element);
-				}
-				
-
-				//if(type == decouplerObject && outputIO > highestIO) highestIO = outputIO;
-				if(hasLedIO && ledIO > highestIO) highestIO = ledIO; } } }// keep the highest IO counter up to date
-				// N.B. iodir 0 means that pin is an output, therefor we don't need to alter iodir
-				// as it is defaulted to 0
-
-
-	if( debugMode ) Serial.println(F("highest IO ")); Serial.println(highestIO);
-	highestIO = highestIO / 16 + 1;
-	if( debugMode ) Serial.println(F("ammount of mcp devices  "));Serial.println(highestIO);						
-	//highestTurnoutIO = highestTurnoutIO / 16 + 1; 	// highest existing IO is 31 which means 2 pca drivers 
-	*nMcp = highestIO; 
-	if( debugMode ) Serial.println( highestTurnoutIO );
+		// N.B all IO is an OUTPUT by default. Therefor we only need to set ioDir bits for INPUTS
+		if(type == memoryObject || type == detectorObject || type == decouplerObject) {
+			iodir += xMcp; 									// match iodir's address to corresponding mcp23017
+			*iodir |= 0x01 << pin; 							// flag pin as input
+			iodir -= xMcp; 									// set address back
+		}
+	}
 }

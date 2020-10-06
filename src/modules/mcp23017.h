@@ -17,7 +17,7 @@ enum mcp23017 {
 class Mcp23017 {
     public:
     Mcp23017();
-    void init(byte, unsigned int);
+    uint8_t init(byte, unsigned int);
     void setIOdir(byte, byte);
     void setPullUp(byte, byte);
     void setPortA(byte);

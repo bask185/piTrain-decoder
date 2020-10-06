@@ -110,17 +110,17 @@ enum SIGNAL_TYPES {
 	_3LED };
 
 
-extern byte menuF();
-extern byte getSubCommand();
-static byte getIDF(byte);
-static byte adjustLowLimitF(byte);
-static byte adjustHighLimitF(byte);
-static byte getTypeF(byte); 
-static byte getIOF(byte);
-static byte getObjectIDF(byte);
-static byte storeObjectF(byte);
+extern uint8_t menuF();
+extern uint8_t getSubCommand();
+static uint8_t getIDF(uint8_t);
+static uint8_t adjustLowLimitF(uint8_t);
+static uint8_t adjustHighLimitF(uint8_t);
+static uint8_t getTypeF(uint8_t); 
+static uint8_t getIOF(uint8_t);
+static uint8_t getObjectIDF(uint8_t);
+static uint8_t storeObjectF(uint8_t);
 static void printLines();
-static byte getTurnoutIndex(byte _ID);
+static uint8_t getTurnoutIndex(uint8_t _ID);
 static void store();
-extern void loadEEPROM(byte*, unsigned int*);
-static byte getIndex();
+extern void loadEEPROM( uint16_t* );
+static uint8_t getIndex();

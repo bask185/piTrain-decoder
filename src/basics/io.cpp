@@ -10,13 +10,12 @@
 
 byte debugMode = 0;
 
-Mcp23017 mcp[] {	// 2 max
+Mcp23017 mcp[] {	// 4 max CONSTRUCT 4 MCP OPBJECTS AND PUT THEM IN AN ARRAY
 	Mcp23017(),
 	Mcp23017(),
 	Mcp23017(),
 	Mcp23017() };
-
-byte nMcp;
+byte nMcp = 4;		// We assume first that all 4 slaves are present, we check later on
 
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 
@@ -38,6 +37,7 @@ void setServo(byte pin, byte _state) {
 
 	servoDriver.setPWM(pin, 0, us);
 }
+
 
 void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is to be set
 	static byte pinPrev, xMcpPrev;
@@ -63,20 +63,31 @@ void setOutput(byte output, byte _state) {	//  ID prev is to be cleared, ID is t
 
 void initIO(void) {
 	beginTransmission();
-	Serial.println(F("BOOTING I2C"));
+	Serial.println(F("INITIALIZING SERVO DRIVER"));
 	Wire.begin();
 	
 	//servoDriver.begin();
 	//servoDriver.setOscillatorFrequency(27000000);
 	//servoDriver.setPWMFreq(50);  // Analog servos run at ~50 Hz updates
-	Serial.println(F("I2C BOOTED"));
+	Serial.println(F("SERVO DRIVER INITIALIZED"));
 
 	unsigned int ioDir[4] = {0,0,0,0};
 	Serial.println(F("LOADING EEPROM"));
-	loadEEPROM(&nMcp, ioDir);
+	loadEEPROM(&ioDir); // this functions reads the eeprom and fills the ioDir array to set inputs and outputs
+	Serial.println(F("EEPROM LOADED"));
 
-	// for(byte j = 0 ; j < nMcp ; j++ ) {
-	 //	mcp[j].init(mcpBaseAddress + j , ioDir[j]);
-	// }
-	 Serial.println(F("EEPROM LOADED"));
+
+	Serial.println(F("INITIALIZING MCP230127 DEVICES"));
+	for(byte j = 0 ; j < nMcp ; j++ ) {						// check if all 4 slaves are present and set their IO dir registers
+		if( mcp[j].init(mcpBaseAddress + j , ioDir[j]) ) {  // if function returns true, the slave did NOT respond
+			nMcp = i ;
+			break ; 
+		}
+	}
+	if( nMcp ) {
+		Serial.print( nMcp ) ;
+		Serial.println(F(" MCP DEVICES DETECTED"));
+	} else {
+		Serial.println(F("NO MCP SLAVES DETECTED"));
+	}
 }

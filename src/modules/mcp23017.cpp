@@ -14,13 +14,15 @@
 
 Mcp23017::Mcp23017() {;}
 
-void Mcp23017::init(byte _address, unsigned int ioDir) {
+uint8_t Mcp23017::init(byte _address, unsigned int ioDir) {
     address = _address;
     Wire.beginTransmission(address);
     Wire.write(IODIRA);
     Wire.write(ioDir>>8);
     Wire.write(ioDir);
-    Wire.endTransmission();
+    uint8_t error = Wire.endTransmission();
+
+    if( error ) return true; // when this happens the slave is not present or defective
 
     Wire.beginTransmission(address);
     Wire.write(pullUpRegA);
@@ -32,7 +34,10 @@ void Mcp23017::init(byte _address, unsigned int ioDir) {
     Wire.write(portA);
     Wire.write(0);
     Wire.write(0);
-    Wire.endTransmission(); }
+    Wire.endTransmission();
+    
+    return false;
+}
 
 void Mcp23017::setIOdir(byte iodirA, byte iodirB) {
     Wire.beginTransmission(address);
